@@ -1,14 +1,15 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { Menu, Bell, Search } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../store/authStore';
 
 const Navbar = ({ toggle }) => {
   const location = useLocation();
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
 
   const pageTitles = {
     '/dashboard': 'Dashboard',
+    '/banners': 'Banner Management',
     '/products': 'Products',
     '/orders': 'Orders',
     '/customers': 'Customers',

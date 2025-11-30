@@ -9,6 +9,8 @@ import Products from './pages/Products';
 import Orders from './pages/Orders';
 import Customers from './pages/Customers';
 import MIEByResha from './pages/MIEByResha';
+import Banners from './pages/Banners';
+import BannerModel from './components/BannerModel';
 
 const App = () => {
   return (
@@ -33,6 +35,7 @@ const App = () => {
             <Route path="orders" element={<Orders />} />
             <Route path="customers" element={<Customers />} />
             <Route path="mie-by-resha" element={<MIEByResha />} />
+            <Route path="banners" element={<BannerModel />} />
           </Route>
           
           {/* Catch all route - redirect to dashboard */}

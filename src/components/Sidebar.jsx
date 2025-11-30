@@ -1,6 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { X, Home, Package, ShoppingCart, Users, Sparkles, LogOut, AlertTriangle } from 'lucide-react';
+import { 
+  X, 
+  Home, 
+  Package, 
+  ShoppingCart, 
+  Users, 
+  Sparkles, 
+  LogOut, 
+  AlertTriangle,
+  Image
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Sidebar = ({ isOpen, toggle }) => {
@@ -15,6 +25,9 @@ const Sidebar = ({ isOpen, toggle }) => {
     { path: '/orders', name: 'Orders', icon: ShoppingCart },
     { path: '/customers', name: 'Customers', icon: Users },
     { path: '/mie-by-resha', name: 'MIE by Resha', icon: Sparkles },
+
+    // ⭐ FIXED PATH — MATCHES App.jsx
+    { path: '/banners', name: 'Banner', icon: Image },
   ];
 
   const handleNavigation = (path) => {
@@ -22,9 +35,7 @@ const Sidebar = ({ isOpen, toggle }) => {
     if (window.innerWidth < 1024) toggle();
   };
 
-  const handleLogoutClick = () => {
-    setShowLogoutModal(true);
-  };
+  const handleLogoutClick = () => setShowLogoutModal(true);
 
   const handleConfirmLogout = () => {
     logout();
@@ -32,9 +43,7 @@ const Sidebar = ({ isOpen, toggle }) => {
     navigate('/login', { replace: true });
   };
 
-  const handleCancelLogout = () => {
-    setShowLogoutModal(false);
-  };
+  const handleCancelLogout = () => setShowLogoutModal(false);
 
   return (
     <>
@@ -44,7 +53,7 @@ const Sidebar = ({ isOpen, toggle }) => {
           onClick={toggle}
         />
       )}
-      
+
       {/* Sidebar */}
       <aside
         className={`fixed top-0 left-0 h-full bg-gradient-to-b from-purple-900 to-purple-800 text-white z-50 transition-transform duration-300 ${
@@ -52,6 +61,7 @@ const Sidebar = ({ isOpen, toggle }) => {
         } w-64 lg:translate-x-0`}
       >
         <div className="flex flex-col h-full">
+          {/* Logo */}
           <div className="p-6 border-b border-purple-700">
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold">House of Resha</h1>
@@ -60,7 +70,8 @@ const Sidebar = ({ isOpen, toggle }) => {
               </button>
             </div>
           </div>
-          
+
+          {/* Navigation */}
           <nav className="flex-1 py-6 overflow-y-auto">
             {menuItems.map((item) => {
               const Icon = item.icon;
@@ -81,9 +92,10 @@ const Sidebar = ({ isOpen, toggle }) => {
               );
             })}
           </nav>
-          
+
+          {/* Logout */}
           <div className="p-6 border-t border-purple-700">
-            <button 
+            <button
               onClick={handleLogoutClick}
               className="w-full flex items-center gap-4 px-4 py-3 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
             >
@@ -94,11 +106,12 @@ const Sidebar = ({ isOpen, toggle }) => {
         </div>
       </aside>
 
-      {/* Logout Confirmation Modal */}
+      {/* Logout Modal */}
       {showLogoutModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-auto animate-in fade-in duration-300">
-            {/* Modal Header */}
+            
+            {/* Header */}
             <div className="flex items-center gap-3 p-6 border-b border-gray-200">
               <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
                 <AlertTriangle className="text-red-600" size={20} />
@@ -113,14 +126,15 @@ const Sidebar = ({ isOpen, toggle }) => {
               </div>
             </div>
 
-            {/* Modal Body */}
+            {/* Body */}
             <div className="p-6">
               <p className="text-gray-700">
-                You will be redirected to the login page and will need to enter your credentials again to access the admin panel.
+                You will be redirected to the login page and will need to enter your
+                credentials again to access the admin panel.
               </p>
             </div>
 
-            {/* Modal Footer */}
+            {/* Footer */}
             <div className="flex flex-col sm:flex-row gap-3 p-6 border-t border-gray-200">
               <button
                 onClick={handleCancelLogout}
