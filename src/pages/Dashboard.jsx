@@ -1,6 +1,9 @@
 // import React from 'react';
+// import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 // const Dashboard = () => {
+//   const queryClient = useQueryClient();
+
 //   const stats = [
 //     { title: 'Total Revenue', value: '₹1,24,500', change: '+12.5%', color: 'blue' },
 //     { title: 'Orders', value: '156', change: '+8.2%', color: 'green' },
@@ -8,8 +11,54 @@
 //     { title: 'Products', value: '89', change: '+3.1%', color: 'orange' },
 //   ];
 
+//   // Fetch users using TanStack Query
+//   const { 
+//     data: users = [], 
+//     isLoading, 
+//     error, 
+//     refetch,
+//     isFetching 
+//   } = useQuery({
+//     queryKey: ['users'],
+//     queryFn: async () => {
+//       const response = await fetch('https://hor-server.onrender.com/data');
+      
+//       if (!response.ok) {
+//         throw new Error(`HTTP error! status: ${response.status}`);
+//       }
+      
+//       const userData = await response.json();
+//       console.log('Fetched user data:', userData);
+
+//       // Check if userData is an array, if not, try to extract users from the response
+//       let usersArray = userData;
+//       if (!Array.isArray(userData)) {
+//         usersArray = userData.users || userData.data || userData.result || [];
+//       }
+      
+//       return usersArray;
+//     },
+//     retry: 2,
+//     refetchOnWindowFocus: false,
+//   });
+
+//   // Function to get user field with fallback
+//   const getUserField = (user, fieldNames) => {
+//     for (let field of fieldNames) {
+//       if (user[field] !== undefined && user[field] !== null && user[field] !== '') {
+//         return user[field];
+//       }
+//     }
+//     return 'N/A';
+//   };
+
+//   const handleRefresh = () => {
+//     refetch();
+//   };
+
 //   return (
 //     <div className="space-y-6">
+//       {/* Stats Cards */}
 //       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
 //         {stats.map((stat, idx) => (
 //           <div key={idx} className="bg-white p-6 rounded-lg shadow-md">
@@ -21,6 +70,100 @@
 //           </div>
 //         ))}
 //       </div>
+
+//       {/* Users Section */}
+//       <div className="bg-white p-6 rounded-lg shadow-md">
+//         <div className="flex justify-between items-center mb-4">
+//           <h3 className="text-lg font-semibold">All Users ({users.length})</h3>
+//           <div className="flex gap-2">
+//             {isFetching && (
+//               <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+//             )}
+//             <button 
+//               onClick={handleRefresh}
+//               disabled={isFetching}
+//               className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
+//             >
+//               Refresh
+//             </button>
+//           </div>
+//         </div>
+        
+//         {isLoading && (
+//           <div className="text-center py-8">
+//             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+//             <p className="text-gray-600 mt-2">Loading users...</p>
+//           </div>
+//         )}
+
+//         {error && (
+//           <div className="text-center py-4 bg-red-50 rounded-lg">
+//             <p className="text-red-600 font-medium">Error loading users: {error.message}</p>
+//             <button 
+//               onClick={handleRefresh}
+//               className="mt-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm"
+//             >
+//               Try Again
+//             </button>
+//           </div>
+//         )}
+
+//         {!isLoading && !error && (
+//           <div className="overflow-x-auto">
+//             <table className="min-w-full divide-y divide-gray-200">
+//               <thead className="bg-gray-50">
+//                 <tr>
+//                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+//                     #
+//                   </th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+//                     First Name
+//                   </th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+//                     Last Name
+//                   </th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+//                     Email
+//                   </th>
+//                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+//                     Phone Number
+//                   </th>
+//                 </tr>
+//               </thead>
+//               <tbody className="bg-white divide-y divide-gray-200">
+//                 {users.map((user, index) => (
+//                   <tr key={user.id || user._id || index} className="hover:bg-gray-50">
+//                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+//                       {index + 1}
+//                     </td>
+//                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+//                       {getUserField(user, ['firstname', 'firstName', 'first_name', 'fname', 'name'])}
+//                     </td>
+//                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+//                       {getUserField(user, ['lastname', 'lastName', 'last_name', 'lname', 'surname'])}
+//                     </td>
+//                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+//                       {getUserField(user, ['email', 'emailAddress', 'email_address'])}
+//                     </td>
+//                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+//                       {getUserField(user, ['phone', 'phoneNumber', 'phone_number', 'number', 'mobile', 'contact'])}
+//                     </td>
+//                   </tr>
+//                 ))}
+//               </tbody>
+//             </table>
+//           </div>
+//         )}
+
+//         {!isLoading && !error && users.length === 0 && (
+//           <div className="text-center py-8">
+//             <p className="text-gray-600 text-lg">No users found.</p>
+//             <p className="text-gray-500 text-sm mt-1">The API returned an empty dataset.</p>
+//           </div>
+//         )}
+//       </div>
+
+//       {/* Recent Activity Section */}
 //       <div className="bg-white p-6 rounded-lg shadow-md">
 //         <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
 //         <div className="space-y-3">
@@ -41,12 +184,11 @@
 
 // export default Dashboard;
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 const Dashboard = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const queryClient = useQueryClient();
 
   const stats = [
     { title: 'Total Revenue', value: '₹1,24,500', change: '+12.5%', color: 'blue' },
@@ -55,39 +197,65 @@ const Dashboard = () => {
     { title: 'Products', value: '89', change: '+3.1%', color: 'orange' },
   ];
 
-  // Fetch users from API
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('https://hor-server.onrender.com/data');
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const userData = await response.json();
-        console.log('Fetched user data:', userData); // For debugging
-        
-        // Check if userData is an array, if not, try to extract users from the response
-        let usersArray = userData;
-        if (!Array.isArray(userData)) {
-          // Try common properties that might contain the user array
-          usersArray = userData.users || userData.data || userData.result || [];
-        }
-        
-        setUsers(usersArray);
-        setError(null);
-      } catch (err) {
-        setError(err.message);
-        console.error('Error fetching users:', err);
-      } finally {
-        setLoading(false);
+  // Fetch active users
+  const { 
+    data: activeUsers = [], 
+    isLoading: activeUsersLoading, 
+    error: activeUsersError, 
+    refetch: refetchActiveUsers,
+    isFetching: activeUsersFetching 
+  } = useQuery({
+    queryKey: ['active-users'],
+    queryFn: async () => {
+      const response = await fetch('https://hor-server.onrender.com/data');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    };
+      
+      const userData = await response.json();
+      console.log('Fetched active user data:', userData);
 
-    fetchUsers();
-  }, []);
+      let usersArray = userData;
+      if (!Array.isArray(userData)) {
+        usersArray = userData.users || userData.data || userData.result || [];
+      }
+      
+      return usersArray;
+    },
+    retry: 2,
+    refetchOnWindowFocus: false,
+  });
+
+  // Fetch inactive users
+  const { 
+    data: inactiveUsers = [], 
+    isLoading: inactiveUsersLoading, 
+    error: inactiveUsersError, 
+    refetch: refetchInactiveUsers,
+    isFetching: inactiveUsersFetching 
+  } = useQuery({
+    queryKey: ['inactive-users'],
+    queryFn: async () => {
+      const response = await fetch('https://hor-server.onrender.com/inactive-users');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const userData = await response.json();
+      console.log('Fetched inactive user data:', userData);
+
+      let usersArray = userData;
+      if (!Array.isArray(userData)) {
+        usersArray = userData.users || userData.data || userData.result || [];
+      }
+      
+      return usersArray;
+    },
+    retry: 2,
+    refetchOnWindowFocus: false,
+  });
 
   // Function to get user field with fallback
   const getUserField = (user, fieldNames) => {
@@ -98,6 +266,15 @@ const Dashboard = () => {
     }
     return 'N/A';
   };
+
+  const handleRefreshAll = () => {
+    refetchActiveUsers();
+    refetchInactiveUsers();
+  };
+
+  const isLoading = activeUsersLoading || inactiveUsersLoading;
+  const isFetching = activeUsersFetching || inactiveUsersFetching;
+  const hasError = activeUsersError || inactiveUsersError;
 
   return (
     <div className="space-y-6">
@@ -114,30 +291,38 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Users Section */}
+      {/* Users Section with Tabs */}
       <div className="bg-white p-6 rounded-lg shadow-md">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">All Users ({users.length})</h3>
-          <button 
-            onClick={() => window.location.reload()}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm"
-          >
-            Refresh
-          </button>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-semibold">Users Management</h3>
+          <div className="flex gap-2">
+            {isFetching && (
+              <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+            )}
+            <button 
+              onClick={handleRefreshAll}
+              disabled={isFetching}
+              className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
+            >
+              Refresh All
+            </button>
+          </div>
         </div>
-        
-        {loading && (
+
+        {isLoading && (
           <div className="text-center py-8">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             <p className="text-gray-600 mt-2">Loading users...</p>
           </div>
         )}
 
-        {error && (
+        {hasError && (
           <div className="text-center py-4 bg-red-50 rounded-lg">
-            <p className="text-red-600 font-medium">Error loading users: {error}</p>
+            <p className="text-red-600 font-medium">
+              Error loading users: {activeUsersError?.message || inactiveUsersError?.message}
+            </p>
             <button 
-              onClick={() => window.location.reload()}
+              onClick={handleRefreshAll}
               className="mt-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm"
             >
               Try Again
@@ -145,57 +330,131 @@ const Dashboard = () => {
           </div>
         )}
 
-        {!loading && !error && (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    #
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    First Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Last Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Phone Number
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {users.map((user, index) => (
-                  <tr key={user.id || user._id || index} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {index + 1}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {getUserField(user, ['firstname', 'firstName', 'first_name', 'fname', 'name'])}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {getUserField(user, ['lastname', 'lastName', 'last_name', 'lname', 'surname'])}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {getUserField(user, ['email', 'emailAddress', 'email_address'])}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {getUserField(user, ['phone', 'phoneNumber', 'phone_number', 'number', 'mobile', 'contact'])}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        {!isLoading && !hasError && (
+          <div className="space-y-8">
+            {/* Active Users Section */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-lg font-semibold text-green-700 flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  Active Users ({activeUsers.length})
+                </h4>
+                <span className="text-sm text-gray-500">Users active within last 30 days</span>
+              </div>
+              
+              <div className="overflow-x-auto border border-green-200 rounded-lg">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-green-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                        #
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                        First Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                        Last Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
+                        Phone Number
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {activeUsers.map((user, index) => (
+                      <tr key={user.id || user._id || index} className="hover:bg-green-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {index + 1}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {getUserField(user, ['firstname', 'firstName', 'first_name', 'fname', 'name'])}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {getUserField(user, ['lastname', 'lastName', 'last_name', 'lname', 'surname'])}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {getUserField(user, ['email', 'emailAddress', 'email_address'])}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {getUserField(user, ['phone', 'phoneNumber', 'phone_number', 'number', 'mobile', 'contact'])}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                
+                {activeUsers.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">No active users found.</p>
+                  </div>
+                )}
+              </div>
+            </div>
 
-        {!loading && !error && users.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-gray-600 text-lg">No users found.</p>
-            <p className="text-gray-500 text-sm mt-1">The API returned an empty dataset.</p>
+            {/* Inactive Users Section */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-lg font-semibold text-red-700 flex items-center gap-2">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  Inactive Users ({inactiveUsers.length})
+                </h4>
+                <span className="text-sm text-gray-500">Not active for 30+ days</span>
+              </div>
+              
+              <div className="overflow-x-auto border border-red-200 rounded-lg">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-red-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">
+                        #
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">
+                        First Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">
+                        Last Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">
+                        Phone Number
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {inactiveUsers.map((user, index) => (
+                      <tr key={user.id || user._id || index} className="hover:bg-red-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {index + 1}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {getUserField(user, ['firstname', 'firstName', 'first_name', 'fname', 'name'])}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {getUserField(user, ['lastname', 'lastName', 'last_name', 'lname', 'surname'])}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {getUserField(user, ['email', 'emailAddress', 'email_address'])}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {getUserField(user, ['phone', 'phoneNumber', 'phone_number', 'number', 'mobile', 'contact'])}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                
+                {inactiveUsers.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">No inactive users found.</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>
