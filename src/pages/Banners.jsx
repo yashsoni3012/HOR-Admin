@@ -316,3 +316,14 @@
 // export default Banners;
 
 
+import React from 'react'
+
+const Banners = () => {
+  return (
+    <div>
+      hello
+    </div>
+  )
+}
+
+export default Banners
