@@ -1,478 +1,214 @@
-// import React from 'react';
-// import { useQuery, useQueryClient } from '@tanstack/react-query';
-
-// const Dashboard = () => {
-//   const queryClient = useQueryClient();
-
-//   const stats = [
-//     { title: 'Total Revenue', value: '₹1,24,500', change: '+12.5%', color: 'blue' },
-//     { title: 'Orders', value: '156', change: '+8.2%', color: 'green' },
-//     { title: 'Customers', value: '1,234', change: '+15.3%', color: 'purple' },
-//     { title: 'Products', value: '89', change: '+3.1%', color: 'orange' },
-//   ];
-
-//   // Fetch users using TanStack Query
-//   const { 
-//     data: users = [], 
-//     isLoading, 
-//     error, 
-//     refetch,
-//     isFetching 
-//   } = useQuery({
-//     queryKey: ['users'],
-//     queryFn: async () => {
-//       const response = await fetch('https://hor-server.onrender.com/data');
-      
-//       if (!response.ok) {
-//         throw new Error(`HTTP error! status: ${response.status}`);
-//       }
-      
-//       const userData = await response.json();
-//       console.log('Fetched user data:', userData);
-
-//       // Check if userData is an array, if not, try to extract users from the response
-//       let usersArray = userData;
-//       if (!Array.isArray(userData)) {
-//         usersArray = userData.users || userData.data || userData.result || [];
-//       }
-      
-//       return usersArray;
-//     },
-//     retry: 2,
-//     refetchOnWindowFocus: false,
-//   });
-
-//   // Function to get user field with fallback
-//   const getUserField = (user, fieldNames) => {
-//     for (let field of fieldNames) {
-//       if (user[field] !== undefined && user[field] !== null && user[field] !== '') {
-//         return user[field];
-//       }
-//     }
-//     return 'N/A';
-//   };
-
-//   const handleRefresh = () => {
-//     refetch();
-//   };
-
-//   return (
-//     <div className="space-y-6">
-//       {/* Stats Cards */}
-//       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-//         {stats.map((stat, idx) => (
-//           <div key={idx} className="bg-white p-6 rounded-lg shadow-md">
-//             <p className="text-gray-600 text-sm">{stat.title}</p>
-//             <div className="flex items-end justify-between mt-2">
-//               <h3 className="text-2xl lg:text-3xl font-bold text-gray-800">{stat.value}</h3>
-//               <span className="text-green-600 text-sm font-semibold">{stat.change}</span>
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-
-//       {/* Users Section */}
-//       <div className="bg-white p-6 rounded-lg shadow-md">
-//         <div className="flex justify-between items-center mb-4">
-//           <h3 className="text-lg font-semibold">All Users ({users.length})</h3>
-//           <div className="flex gap-2">
-//             {isFetching && (
-//               <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
-//             )}
-//             <button 
-//               onClick={handleRefresh}
-//               disabled={isFetching}
-//               className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
-//             >
-//               Refresh
-//             </button>
-//           </div>
-//         </div>
-        
-//         {isLoading && (
-//           <div className="text-center py-8">
-//             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-//             <p className="text-gray-600 mt-2">Loading users...</p>
-//           </div>
-//         )}
-
-//         {error && (
-//           <div className="text-center py-4 bg-red-50 rounded-lg">
-//             <p className="text-red-600 font-medium">Error loading users: {error.message}</p>
-//             <button 
-//               onClick={handleRefresh}
-//               className="mt-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm"
-//             >
-//               Try Again
-//             </button>
-//           </div>
-//         )}
-
-//         {!isLoading && !error && (
-//           <div className="overflow-x-auto">
-//             <table className="min-w-full divide-y divide-gray-200">
-//               <thead className="bg-gray-50">
-//                 <tr>
-//                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                     #
-//                   </th>
-//                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                     First Name
-//                   </th>
-//                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                     Last Name
-//                   </th>
-//                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                     Email
-//                   </th>
-//                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-//                     Phone Number
-//                   </th>
-//                 </tr>
-//               </thead>
-//               <tbody className="bg-white divide-y divide-gray-200">
-//                 {users.map((user, index) => (
-//                   <tr key={user.id || user._id || index} className="hover:bg-gray-50">
-//                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-//                       {index + 1}
-//                     </td>
-//                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-//                       {getUserField(user, ['firstname', 'firstName', 'first_name', 'fname', 'name'])}
-//                     </td>
-//                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-//                       {getUserField(user, ['lastname', 'lastName', 'last_name', 'lname', 'surname'])}
-//                     </td>
-//                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-//                       {getUserField(user, ['email', 'emailAddress', 'email_address'])}
-//                     </td>
-//                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-//                       {getUserField(user, ['phone', 'phoneNumber', 'phone_number', 'number', 'mobile', 'contact'])}
-//                     </td>
-//                   </tr>
-//                 ))}
-//               </tbody>
-//             </table>
-//           </div>
-//         )}
-
-//         {!isLoading && !error && users.length === 0 && (
-//           <div className="text-center py-8">
-//             <p className="text-gray-600 text-lg">No users found.</p>
-//             <p className="text-gray-500 text-sm mt-1">The API returned an empty dataset.</p>
-//           </div>
-//         )}
-//       </div>
-
-//       {/* Recent Activity Section */}
-//       <div className="bg-white p-6 rounded-lg shadow-md">
-//         <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
-//         <div className="space-y-3">
-//           {[1, 2, 3, 4].map((i) => (
-//             <div key={i} className="flex items-center justify-between py-3 border-b">
-//               <div>
-//                 <p className="font-medium text-gray-800">Order #{1000 + i}</p>
-//                 <p className="text-sm text-gray-500">Customer Name {i}</p>
-//               </div>
-//               <span className="text-purple-600 font-semibold">₹{(i * 1250).toLocaleString()}</span>
-//             </div>
-//           ))}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Dashboard;
-
 import React from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import {
+  TrendingUp,
+  ShoppingCart,
+  Users,
+  Package,
+  DollarSign,
+  Calendar,
+  Activity,
+  ArrowUp,
+  ArrowDown
+} from 'lucide-react';
 
 const Dashboard = () => {
-  const queryClient = useQueryClient();
-
   const stats = [
-    { title: 'Total Revenue', value: '₹1,24,500', change: '+12.5%', color: 'blue' },
-    { title: 'Orders', value: '156', change: '+8.2%', color: 'green' },
-    { title: 'Customers', value: '1,234', change: '+15.3%', color: 'purple' },
-    { title: 'Products', value: '89', change: '+3.1%', color: 'orange' },
+    {
+      title: 'Total Revenue',
+      value: '₹1,24,500',
+      change: '+12.5%',
+      trend: 'up',
+      icon: DollarSign,
+      gradient: 'from-blue-500 to-cyan-500',
+      bgGradient: 'from-blue-50 to-cyan-50',
+      iconBg: 'bg-blue-100',
+      iconColor: 'text-blue-600'
+    },
+    {
+      title: 'Total Orders',
+      value: '156',
+      change: '+8.2%',
+      trend: 'up',
+      icon: ShoppingCart,
+      gradient: 'from-green-500 to-emerald-500',
+      bgGradient: 'from-green-50 to-emerald-50',
+      iconBg: 'bg-green-100',
+      iconColor: 'text-green-600'
+    },
+    {
+      title: 'Total Customers',
+      value: '1,234',
+      change: '+15.3%',
+      trend: 'up',
+      icon: Users,
+      gradient: 'from-purple-500 to-pink-500',
+      bgGradient: 'from-purple-50 to-pink-50',
+      iconBg: 'bg-purple-100',
+      iconColor: 'text-purple-600'
+    },
+    {
+      title: 'Total Products',
+      value: '89',
+      change: '+3.1%',
+      trend: 'up',
+      icon: Package,
+      gradient: 'from-orange-500 to-red-500',
+      bgGradient: 'from-orange-50 to-red-50',
+      iconBg: 'bg-orange-100',
+      iconColor: 'text-orange-600'
+    },
   ];
-
-  // Fetch active users
-  const { 
-    data: activeUsers = [], 
-    isLoading: activeUsersLoading, 
-    error: activeUsersError, 
-    refetch: refetchActiveUsers,
-    isFetching: activeUsersFetching 
-  } = useQuery({
-    queryKey: ['active-users'],
-    queryFn: async () => {
-      const response = await fetch('https://hor-server.onrender.com/data');
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const userData = await response.json();
-      console.log('Fetched active user data:', userData);
-
-      let usersArray = userData;
-      if (!Array.isArray(userData)) {
-        usersArray = userData.users || userData.data || userData.result || [];
-      }
-      
-      return usersArray;
-    },
-    retry: 2,
-    refetchOnWindowFocus: false,
-  });
-
-  // Fetch inactive users
-  const { 
-    data: inactiveUsers = [], 
-    isLoading: inactiveUsersLoading, 
-    error: inactiveUsersError, 
-    refetch: refetchInactiveUsers,
-    isFetching: inactiveUsersFetching 
-  } = useQuery({
-    queryKey: ['inactive-users'],
-    queryFn: async () => {
-      const response = await fetch('https://hor-server.onrender.com/inactive-users');
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const userData = await response.json();
-      console.log('Fetched inactive user data:', userData);
-
-      let usersArray = userData;
-      if (!Array.isArray(userData)) {
-        usersArray = userData.users || userData.data || userData.result || [];
-      }
-      
-      return usersArray;
-    },
-    retry: 2,
-    refetchOnWindowFocus: false,
-  });
-
-  // Function to get user field with fallback
-  const getUserField = (user, fieldNames) => {
-    for (let field of fieldNames) {
-      if (user[field] !== undefined && user[field] !== null && user[field] !== '') {
-        return user[field];
-      }
-    }
-    return 'N/A';
-  };
-
-  const handleRefreshAll = () => {
-    refetchActiveUsers();
-    refetchInactiveUsers();
-  };
-
-  const isLoading = activeUsersLoading || inactiveUsersLoading;
-  const isFetching = activeUsersFetching || inactiveUsersFetching;
-  const hasError = activeUsersError || inactiveUsersError;
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        {stats.map((stat, idx) => (
-          <div key={idx} className="bg-white p-6 rounded-lg shadow-md">
-            <p className="text-gray-600 text-sm">{stat.title}</p>
-            <div className="flex items-end justify-between mt-2">
-              <h3 className="text-2xl lg:text-3xl font-bold text-gray-800">{stat.value}</h3>
-              <span className="text-green-600 text-sm font-semibold">{stat.change}</span>
-            </div>
+      {/* Welcome Header */}
+      <div className="bg-gradient-to-r from-purple-600 via-pink-500 to-red-500 rounded-2xl p-6 lg:p-8 text-white shadow-xl">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl lg:text-3xl font-bold mb-2">Welcome Back, Admin! 👋</h1>
+            <p className="text-purple-100 text-sm lg:text-base">
+              Here's what's happening with your store today.
+            </p>
           </div>
-        ))}
-      </div>
-
-      {/* Users Section with Tabs */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold">Users Management</h3>
-          <div className="flex gap-2">
-            {isFetching && (
-              <div className="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
-            )}
-            <button 
-              onClick={handleRefreshAll}
-              disabled={isFetching}
-              className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-4 py-2 rounded text-sm flex items-center gap-2"
-            >
-              Refresh All
-            </button>
+          <div className="flex items-center gap-2 bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-lg">
+            <Calendar size={20} />
+            <span className="font-medium">{new Date().toLocaleDateString('en-US', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}</span>
           </div>
         </div>
+      </div>
 
-        {isLoading && (
-          <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            <p className="text-gray-600 mt-2">Loading users...</p>
-          </div>
-        )}
-
-        {hasError && (
-          <div className="text-center py-4 bg-red-50 rounded-lg">
-            <p className="text-red-600 font-medium">
-              Error loading users: {activeUsersError?.message || inactiveUsersError?.message}
-            </p>
-            <button 
-              onClick={handleRefreshAll}
-              className="mt-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded text-sm"
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        {stats.map((stat, idx) => {
+          const Icon = stat.icon;
+          const TrendIcon = stat.trend === 'up' ? ArrowUp : ArrowDown;
+          return (
+            <div
+              key={idx}
+              className={`bg-gradient-to-br ${stat.bgGradient} rounded-xl p-6 border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group`}
             >
-              Try Again
-            </button>
-          </div>
-        )}
-
-        {!isLoading && !hasError && (
-          <div className="space-y-8">
-            {/* Active Users Section */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold text-green-700 flex items-center gap-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  Active Users ({activeUsers.length})
-                </h4>
-                <span className="text-sm text-gray-500">Users active within last 30 days</span>
+              <div className="flex items-start justify-between mb-4">
+                <div className={`${stat.iconBg} p-3 rounded-lg group-hover:scale-110 transition-transform`}>
+                  <Icon className={stat.iconColor} size={24} />
+                </div>
+                <div className={`flex items-center gap-1 px-2 py-1 rounded-full ${stat.trend === 'up' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                  }`}>
+                  <TrendIcon size={14} />
+                  <span className="text-xs font-bold">{stat.change}</span>
+                </div>
               </div>
-              
-              <div className="overflow-x-auto border border-green-200 rounded-lg">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-green-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
-                        #
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
-                        First Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
-                        Last Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-green-700 uppercase tracking-wider">
-                        Phone Number
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {activeUsers.map((user, index) => (
-                      <tr key={user.id || user._id || index} className="hover:bg-green-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {index + 1}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {getUserField(user, ['firstname', 'firstName', 'first_name', 'fname', 'name'])}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {getUserField(user, ['lastname', 'lastName', 'last_name', 'lname', 'surname'])}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {getUserField(user, ['email', 'emailAddress', 'email_address'])}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {getUserField(user, ['phone', 'phoneNumber', 'phone_number', 'number', 'mobile', 'contact'])}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                
-                {activeUsers.length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">No active users found.</p>
-                  </div>
-                )}
-              </div>
+              <p className="text-gray-600 text-sm font-medium mb-1">{stat.title}</p>
+              <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">{stat.value}</h3>
             </div>
-
-            {/* Inactive Users Section */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold text-red-700 flex items-center gap-2">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  Inactive Users ({inactiveUsers.length})
-                </h4>
-                <span className="text-sm text-gray-500">Not active for 30+ days</span>
-              </div>
-              
-              <div className="overflow-x-auto border border-red-200 rounded-lg">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-red-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">
-                        #
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">
-                        First Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">
-                        Last Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">
-                        Email
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-red-700 uppercase tracking-wider">
-                        Phone Number
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {inactiveUsers.map((user, index) => (
-                      <tr key={user.id || user._id || index} className="hover:bg-red-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {index + 1}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {getUserField(user, ['firstname', 'firstName', 'first_name', 'fname', 'name'])}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {getUserField(user, ['lastname', 'lastName', 'last_name', 'lname', 'surname'])}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {getUserField(user, ['email', 'emailAddress', 'email_address'])}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {getUserField(user, ['phone', 'phoneNumber', 'phone_number', 'number', 'mobile', 'contact'])}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                
-                {inactiveUsers.length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">No inactive users found.</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+          );
+        })}
       </div>
 
       {/* Recent Activity Section */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
-        <div className="space-y-3">
+      <div className="bg-white rounded-2xl shadow-xl p-6 lg:p-8 border border-gray-200">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <Activity className="text-purple-600" size={24} />
+            Recent Activity
+          </h3>
+          {/* <button className="text-purple-600 hover:text-purple-700 font-medium text-sm flex items-center gap-1">
+            View All
+            <ArrowUp size={16} className="rotate-90" />
+          </button> */}
+
+          <Link
+            to="/orders"
+            className="text-purple-600 hover:text-purple-700 font-medium text-sm flex items-center gap-1"
+          >
+            View All
+            <ArrowUp size={16} className="rotate-90" />
+          </Link>
+        </div>
+        <div className="space-y-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="flex items-center justify-between py-3 border-b">
-              <div>
-                <p className="font-medium text-gray-800">Order #{1000 + i}</p>
-                <p className="text-sm text-gray-500">Customer Name {i}</p>
+            <div key={i} className="flex items-center justify-between p-4 bg-gray-50 hover:bg-purple-50 rounded-xl transition-all border border-gray-200 hover:border-purple-200 group">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-white font-bold group-hover:scale-110 transition-transform">
+                  #{1000 + i}
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">Order #{1000 + i}</p>
+                  <p className="text-sm text-gray-500">Customer Name {i} • 2 hours ago</p>
+                </div>
               </div>
-              <span className="text-purple-600 font-semibold">₹{(i * 1250).toLocaleString()}</span>
+              <div className="text-right">
+                <span className="text-lg font-bold text-purple-600">₹{(i * 1250).toLocaleString()}</span>
+                <p className="text-xs text-gray-500">Completed</p>
+              </div>
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Quick Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Top Products */}
+        {/* <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-200">
+          <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <Package className="text-orange-500" size={20} />
+            Top Products
+          </h3>
+          <div className="space-y-3">
+            {[
+              { name: 'Premium T-Shirt', sales: 45, revenue: '₹22,500' },
+              { name: 'Designer Jeans', sales: 32, revenue: '₹38,400' },
+              { name: 'Winter Jacket', sales: 28, revenue: '₹56,000' },
+              { name: 'Casual Shoes', sales: 24, revenue: '₹28,800' },
+            ].map((product, idx) => (
+              <div key={idx} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition">
+                <div>
+                  <p className="font-medium text-gray-900">{product.name}</p>
+                  <p className="text-sm text-gray-500">{product.sales} sales</p>
+                </div>
+                <span className="font-bold text-green-600">{product.revenue}</span>
+              </div>
+            ))}
+          </div>
+        </div> */}
+
+        {/* Performance Chart */}
+        {/* <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-200">
+          <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <TrendingUp className="text-green-500" size={20} />
+            Performance Overview
+          </h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600">Conversion Rate</span>
+              <span className="font-bold text-green-600">4.8% ↗</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="bg-green-500 h-2 rounded-full" style={{ width: '48%' }}></div>
+            </div>
+
+            <div className="flex items-center justify-between mt-4">
+              <span className="text-gray-600">Avg. Order Value</span>
+              <span className="font-bold text-purple-600">₹1,450 ↗</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="bg-purple-500 h-2 rounded-full" style={{ width: '72%' }}></div>
+            </div>
+
+            <div className="flex items-center justify-between mt-4">
+              <span className="text-gray-600">Customer Satisfaction</span>
+              <span className="font-bold text-blue-600">94% ↗</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="bg-blue-500 h-2 rounded-full" style={{ width: '94%' }}></div>
+            </div>
+          </div>
+        </div> */}
       </div>
     </div>
   );

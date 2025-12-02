@@ -14,6 +14,7 @@ const Navbar = ({ toggle }) => {
     '/orders': 'Orders',
     '/customers': 'Customers',
     '/mie-by-resha': 'MIE by Resha',
+    '/users': 'User Management'
   };
 
   const pageTitle = pageTitles[location.pathname] || 'Dashboard';
