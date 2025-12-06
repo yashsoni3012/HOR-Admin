@@ -5,7 +5,7 @@ import { useAuthStore } from '../store/authStore';
 
 const Navbar = ({ toggle }) => {
   const location = useLocation();
-  const user = useAuthStore((state) => state.user);
+  const user = useAuthStore((state) => state.user); 
 
   const pageTitles = {
     '/dashboard': 'Dashboard',

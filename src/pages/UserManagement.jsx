@@ -1,10 +1,605 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { 
-  Users, 
-  RefreshCw, 
-  UserCheck, 
-  UserX, 
+// import React, { useState } from 'react';
+// import { useQuery } from '@tanstack/react-query';
+// import {
+//   Users,
+//   RefreshCw,
+//   UserCheck,
+//   UserX,
+//   Search,
+//   Mail,
+//   Phone,
+//   Activity,
+//   Download,
+//   Eye,
+//   Filter,
+//   Calendar,
+//   ArrowUp,
+//   ArrowDown,
+//   Shield,
+//   CheckCircle,
+//   XCircle,
+//   MoreVertical,
+//   ChevronLeft,
+//   ChevronRight,
+//   ChevronsLeft,
+//   ChevronsRight
+// } from 'lucide-react';
+
+// const UserManagement = () => {
+//   const [activeTab, setActiveTab] = useState('active'); // 'active' or 'inactive'
+//   const [searchTerm, setSearchTerm] = useState('');
+//   const [sortBy, setSortBy] = useState('name');
+//   const [sortOrder, setSortOrder] = useState('asc');
+//   const [currentPage, setCurrentPage] = useState(1);
+//   const usersPerPage = 6;
+
+//   // Fetch active users
+//   const {
+//     data: activeUsers = [],
+//     isLoading: activeUsersLoading,
+//     error: activeUsersError,
+//     refetch: refetchActiveUsers,
+//     isFetching: activeUsersFetching
+//   } = useQuery({
+//     queryKey: ['active-users'],
+//     queryFn: async () => {
+//       const response = await fetch('https://hor-server.onrender.com/data');
+//       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+//       const userData = await response.json();
+//       let usersArray = userData;
+//       if (!Array.isArray(userData)) {
+//         usersArray = userData.users || userData.data || userData.result || [];
+//       }
+//       return usersArray;
+//     },
+//     retry: 2,
+//     refetchOnWindowFocus: false,
+//   });
+
+//   // Fetch inactive users
+//   const {
+//     data: inactiveUsers = [],
+//     isLoading: inactiveUsersLoading,
+//     error: inactiveUsersError,
+//     refetch: refetchInactiveUsers,
+//     isFetching: inactiveUsersFetching
+//   } = useQuery({
+//     queryKey: ['inactive-users'],
+//     queryFn: async () => {
+//       const response = await fetch('https://hor-server.onrender.com/inactive-users');
+//       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+//       const userData = await response.json();
+//       let usersArray = userData;
+//       if (!Array.isArray(userData)) {
+//         usersArray = userData.users || userData.data || userData.result || [];
+//       }
+//       return usersArray;
+//     },
+//     retry: 2,
+//     refetchOnWindowFocus: false,
+//   });
+
+//   const getUserField = (user, fieldNames) => {
+//     for (let field of fieldNames) {
+//       if (user[field] !== undefined && user[field] !== null && user[field] !== '') {
+//         return user[field];
+//       }
+//     }
+//     return 'N/A';
+//   };
+
+//   const handleRefreshAll = () => {
+//     refetchActiveUsers();
+//     refetchInactiveUsers();
+//     setCurrentPage(1); // Reset to first page on refresh
+//   };
+
+//   const isLoading = activeUsersLoading || inactiveUsersLoading;
+//   const isFetching = activeUsersFetching || inactiveUsersFetching;
+//   const hasError = activeUsersError || inactiveUsersError;
+
+//   // Filter users based on search
+//   const currentUsers = activeTab === 'active' ? activeUsers : inactiveUsers;
+
+//   // Sort users
+//   const sortedUsers = [...currentUsers].sort((a, b) => {
+//     const aName = getUserField(a, ['firstname', 'firstName', 'first_name', 'fname', 'name']).toLowerCase();
+//     const bName = getUserField(b, ['firstname', 'firstName', 'first_name', 'fname', 'name']).toLowerCase();
+
+//     if (sortBy === 'name') {
+//       return sortOrder === 'asc' ? aName.localeCompare(bName) : bName.localeCompare(aName);
+//     }
+//     return 0;
+//   });
+
+//   // Filter after sorting
+//   const filteredUsers = sortedUsers.filter(user => {
+//     const searchLower = searchTerm.toLowerCase();
+//     const firstName = getUserField(user, ['firstname', 'firstName', 'first_name', 'fname', 'name']).toLowerCase();
+//     const lastName = getUserField(user, ['lastname', 'lastName', 'last_name', 'lname', 'surname']).toLowerCase();
+//     const email = getUserField(user, ['email', 'emailAddress', 'email_address']).toLowerCase();
+//     const phone = getUserField(user, ['phone', 'phoneNumber', 'phone_number', 'number', 'mobile', 'contact']).toLowerCase();
+
+//     return firstName.includes(searchLower) ||
+//            lastName.includes(searchLower) ||
+//            email.includes(searchLower) ||
+//            phone.includes(searchLower);
+//   });
+
+//   // Pagination calculations
+//   const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+//   const startIndex = (currentPage - 1) * usersPerPage;
+//   const endIndex = startIndex + usersPerPage;
+//   const currentUsersPage = filteredUsers.slice(startIndex, endIndex);
+
+//   const handleSort = (field) => {
+//     if (sortBy === field) {
+//       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+//     } else {
+//       setSortBy(field);
+//       setSortOrder('asc');
+//     }
+//     setCurrentPage(1); // Reset to first page when sorting
+//   };
+
+//   const handlePageChange = (page) => {
+//     setCurrentPage(page);
+//   };
+
+//   const goToFirstPage = () => setCurrentPage(1);
+//   const goToLastPage = () => setCurrentPage(totalPages);
+//   const goToPreviousPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
+//   const goToNextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
+
+//   // Reset to first page when tab changes or search term changes
+//   React.useEffect(() => {
+//     setCurrentPage(1);
+//   }, [activeTab, searchTerm]);
+
+//   return (
+//     <div className="space-y-6">
+//       {/* Header */}
+//       <div className="bg-gradient-to-r from-purple-600 via-pink-500 to-red-500 rounded-2xl p-6 lg:p-8 text-white shadow-xl">
+//         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+//           <div>
+//             <h1 className="text-2xl lg:text-3xl font-bold mb-2 flex items-center gap-3">
+//               <Users size={32} />
+//               User Management
+//             </h1>
+//             <p className="text-purple-100 text-sm lg:text-base">
+//               Monitor and manage all your users in one place
+//             </p>
+//           </div>
+//           <div className="flex items-center gap-2 bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-lg">
+//             <Calendar size={20} />
+//             <span className="font-medium">{new Date().toLocaleDateString('en-US', {
+//               weekday: 'long',
+//               year: 'numeric',
+//               month: 'long',
+//               day: 'numeric'
+//             })}</span>
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Stats Cards */}
+//       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+//         <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+//           <div className="flex items-start justify-between mb-4">
+//             <div className="bg-green-100 p-3 rounded-lg">
+//               <UserCheck className="text-green-600" size={24} />
+//             </div>
+//             <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700">
+//               <ArrowUp size={14} />
+//               <span className="text-xs font-bold">+15.3%</span>
+//             </div>
+//           </div>
+//           <p className="text-gray-600 text-sm font-medium mb-1">Active Users</p>
+//           <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">{activeUsers.length}</h3>
+//         </div>
+
+//         <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-6 border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+//           <div className="flex items-start justify-between mb-4">
+//             <div className="bg-red-100 p-3 rounded-lg">
+//               <UserX className="text-red-600" size={24} />
+//             </div>
+//             <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-red-100 text-red-700">
+//               <ArrowDown size={14} />
+//               <span className="text-xs font-bold">-2.1%</span>
+//             </div>
+//           </div>
+//           <p className="text-gray-600 text-sm font-medium mb-1">Inactive Users</p>
+//           <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">{inactiveUsers.length}</h3>
+//         </div>
+
+//         <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+//           <div className="flex items-start justify-between mb-4">
+//             <div className="bg-blue-100 p-3 rounded-lg">
+//               <Shield className="text-blue-600" size={24} />
+//             </div>
+//             <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700">
+//               <ArrowUp size={14} />
+//               <span className="text-xs font-bold">+8.7%</span>
+//             </div>
+//           </div>
+//           <p className="text-gray-600 text-sm font-medium mb-1">Verified Users</p>
+//           <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">
+//             {Math.round((activeUsers.length + inactiveUsers.length) * 0.85)}
+//           </h3>
+//         </div>
+
+//         <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+//           <div className="flex items-start justify-between mb-4">
+//             <div className="bg-purple-100 p-3 rounded-lg">
+//               <Users className="text-purple-600" size={24} />
+//             </div>
+//             <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-purple-100 text-purple-700">
+//               <ArrowUp size={14} />
+//               <span className="text-xs font-bold">+12.4%</span>
+//             </div>
+//           </div>
+//           <p className="text-gray-600 text-sm font-medium mb-1">Total Users</p>
+//           <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">
+//             {activeUsers.length + inactiveUsers.length}
+//           </h3>
+//         </div>
+//       </div>
+
+//       {/* Main User Management Section */}
+//       <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+//         {/* Header */}
+//         <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6 text-white">
+//           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+//             <div>
+//               <h2 className="text-2xl font-bold flex items-center gap-2 mb-2">
+//                 <Users size={28} />
+//                 User Management Dashboard
+//               </h2>
+//               <p className="text-purple-100 text-sm">
+//                 Monitor and manage your user base effectively
+//               </p>
+//             </div>
+//             <button
+//               onClick={handleRefreshAll}
+//               disabled={isFetching}
+//               className="flex items-center gap-2 bg-white bg-opacity-20 backdrop-blur-sm hover:bg-opacity-30 px-6 py-3 rounded-lg transition font-semibold disabled:opacity-50"
+//             >
+//               <RefreshCw size={18} className={isFetching ? 'animate-spin' : ''} />
+//               <span>Refresh Data</span>
+//             </button>
+//           </div>
+//         </div>
+
+//         {/* Tabs & Controls */}
+//         <div className="p-6 border-b bg-gray-50">
+//           <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
+//             {/* Tabs */}
+//             <div className="flex gap-2 bg-white rounded-lg p-1 shadow-inner border border-gray-200">
+//               <button
+//                 onClick={() => setActiveTab('active')}
+//                 className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+//                   activeTab === 'active'
+//                     ? 'bg-green-500 text-white shadow-lg'
+//                     : 'text-gray-600 hover:bg-gray-100'
+//                 }`}
+//               >
+//                 <UserCheck size={18} />
+//                 <span>Active Users</span>
+//                 <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+//                   activeTab === 'active' ? 'bg-white text-green-600' : 'bg-gray-200 text-gray-700'
+//                 }`}>
+//                   {activeUsers.length}
+//                 </span>
+//               </button>
+//               <button
+//                 onClick={() => setActiveTab('inactive')}
+//                 className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+//                   activeTab === 'inactive'
+//                     ? 'bg-red-500 text-white shadow-lg'
+//                     : 'text-gray-600 hover:bg-gray-100'
+//                 }`}
+//               >
+//                 <UserX size={18} />
+//                 <span>Inactive Users</span>
+//                 <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+//                   activeTab === 'inactive' ? 'bg-white text-red-600' : 'bg-gray-200 text-gray-700'
+//                 }`}>
+//                   {inactiveUsers.length}
+//                 </span>
+//               </button>
+//             </div>
+
+//             {/* Search & Filter */}
+//             <div className="flex flex-col sm:flex-row gap-3 flex-1 lg:max-w-2xl">
+//               <div className="relative flex-1">
+//                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+//                 <input
+//                   type="text"
+//                   placeholder="Search users by name, email, or phone..."
+//                   value={searchTerm}
+//                   onChange={(e) => setSearchTerm(e.target.value)}
+//                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white shadow-sm"
+//                 />
+//               </div>
+//               <button className="flex items-center gap-2 px-4 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition font-medium">
+//                 <Filter size={18} />
+//                 <span>Filter</span>
+//               </button>
+//             </div>
+
+//             {/* Export Button */}
+//             <button className="flex items-center gap-2 px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition font-medium shadow-lg">
+//               <Download size={18} />
+//               <span className="hidden sm:inline">Export CSV</span>
+//             </button>
+//           </div>
+
+//           {/* Results Info */}
+//           <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+//             <div className="text-sm text-gray-600">
+//               Showing <span className="font-semibold text-gray-900">{startIndex + 1}-{Math.min(endIndex, filteredUsers.length)}</span> of{' '}
+//               <span className="font-semibold text-gray-900">{filteredUsers.length}</span> users
+//               {searchTerm && (
+//                 <span> matching "<span className="font-semibold text-gray-900">{searchTerm}</span>"</span>
+//               )}
+//             </div>
+//             <div className="flex items-center gap-2">
+//               <span className="text-sm text-gray-600">Sort by:</span>
+//               <button
+//                 onClick={() => handleSort('name')}
+//                 className="flex items-center gap-1 px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm font-medium"
+//               >
+//                 Name
+//                 {sortBy === 'name' && (
+//                   sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />
+//                 )}
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Loading State */}
+//         {isLoading && (
+//           <div className="text-center py-16">
+//             <div className="inline-flex flex-col items-center gap-4">
+//               <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-200 border-t-purple-600"></div>
+//               <p className="text-gray-600 font-medium">Loading users...</p>
+//             </div>
+//           </div>
+//         )}
+
+//         {/* Error State */}
+//         {hasError && (
+//           <div className="p-8">
+//             <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6 text-center">
+//               <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
+//                 <Activity className="text-red-600" size={32} />
+//               </div>
+//               <h3 className="text-lg font-bold text-red-800 mb-2">Error Loading Users</h3>
+//               <p className="text-red-600 mb-4">
+//                 {activeUsersError?.message || inactiveUsersError?.message}
+//               </p>
+//               <button
+//                 onClick={handleRefreshAll}
+//                 className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-semibold shadow-lg"
+//               >
+//                 Try Again
+//               </button>
+//             </div>
+//           </div>
+//         )}
+
+//         {/* Users Table */}
+//         {!isLoading && !hasError && (
+//           <div className="overflow-x-auto">
+//             <table className="w-full">
+//               <thead className={`${
+//                 activeTab === 'active' ? 'bg-green-50' : 'bg-red-50'
+//               }`}>
+//                 <tr>
+//                   <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700">
+//                     User
+//                   </th>
+//                   <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700 hidden lg:table-cell">
+//                     Contact Info
+//                   </th>
+//                   <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700 hidden md:table-cell">
+//                     Status
+//                   </th>
+//                   <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700">
+//                     Actions
+//                   </th>
+//                 </tr>
+//               </thead>
+//               <tbody className="divide-y divide-gray-200">
+//                 {currentUsersPage.map((user, index) => (
+//                   <tr
+//                     key={user.id || user._id || index}
+//                     className={`hover:${activeTab === 'active' ? 'bg-green-50' : 'bg-red-50'} transition-colors`}
+//                   >
+//                     <td className="px-6 py-4">
+//                       <div className="flex items-center gap-3">
+//                         <div className={`w-12 h-12 rounded-full ${
+//                           activeTab === 'active' ? 'bg-green-100' : 'bg-red-100'
+//                         } flex items-center justify-center font-bold text-lg ${
+//                           activeTab === 'active' ? 'text-green-700' : 'text-red-700'
+//                         }`}>
+//                           {getUserField(user, ['firstname', 'firstName', 'first_name', 'fname', 'name']).charAt(0)}
+//                         </div>
+//                         <div>
+//                           <div className="text-sm font-semibold text-gray-900">
+//                             {getUserField(user, ['firstname', 'firstName', 'first_name', 'fname', 'name'])} {getUserField(user, ['lastname', 'lastName', 'last_name', 'lname', 'surname'])}
+//                           </div>
+//                           <div className="text-xs text-gray-500 mt-1">
+//                             User ID: {user.id || user._id || 'N/A'}
+//                           </div>
+//                         </div>
+//                       </div>
+//                     </td>
+//                     <td className="px-6 py-4 whitespace-nowrap hidden lg:table-cell">
+//                       <div className="space-y-2">
+//                         <div className="flex items-center gap-2 text-sm text-gray-700">
+//                           <Mail size={14} className="text-gray-400" />
+//                           {getUserField(user, ['email', 'emailAddress', 'email_address'])}
+//                         </div>
+//                         <div className="flex items-center gap-2 text-sm text-gray-700">
+//                           <Phone size={14} className="text-gray-400" />
+//                           {getUserField(user, ['phone', 'phoneNumber', 'phone_number', 'number', 'mobile', 'contact'])}
+//                         </div>
+//                       </div>
+//                     </td>
+//                     <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+//                       <div className="flex items-center gap-2">
+//                         <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
+//                           activeTab === 'active'
+//                             ? 'bg-green-100 text-green-700'
+//                             : 'bg-red-100 text-red-700'
+//                         }`}>
+//                           {activeTab === 'active' ? (
+//                             <>
+//                               <CheckCircle size={12} />
+//                               Active
+//                             </>
+//                           ) : (
+//                             <>
+//                               <XCircle size={12} />
+//                               Inactive
+//                             </>
+//                           )}
+//                         </div>
+//                         <div className="text-xs text-gray-500">
+//                           {user.lastLogin ? 'Recently active' : 'No recent activity'}
+//                         </div>
+//                       </div>
+//                     </td>
+//                     <td className="px-6 py-4 whitespace-nowrap">
+//                       <div className="flex items-center gap-2">
+//                         <button className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 hover:bg-purple-100 rounded-lg transition text-sm font-medium">
+//                           <Eye size={14} />
+//                           <span className="hidden sm:inline">View</span>
+//                         </button>
+//                         <button className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-600 hover:bg-gray-100 rounded-lg transition text-sm font-medium">
+//                           <MoreVertical size={14} />
+//                         </button>
+//                       </div>
+//                     </td>
+//                   </tr>
+//                 ))}
+//               </tbody>
+//             </table>
+
+//             {filteredUsers.length === 0 && (
+//               <div className="text-center py-16">
+//                 <div className="inline-flex flex-col items-center gap-4">
+//                   <div className={`w-20 h-20 rounded-full ${
+//                     activeTab === 'active' ? 'bg-green-100' : 'bg-red-100'
+//                   } flex items-center justify-center`}>
+//                     {activeTab === 'active' ? (
+//                       <UserCheck className="text-green-600" size={40} />
+//                     ) : (
+//                       <UserX className="text-red-600" size={40} />
+//                     )}
+//                   </div>
+//                   <div>
+//                     <h3 className="text-lg font-bold text-gray-800 mb-1">
+//                       {searchTerm ? 'No users found' : `No ${activeTab} users`}
+//                     </h3>
+//                     <p className="text-gray-500 text-sm">
+//                       {searchTerm ? 'Try adjusting your search' : `There are no ${activeTab} users at the moment`}
+//                     </p>
+//                   </div>
+//                 </div>
+//               </div>
+//             )}
+
+//             {/* Pagination Controls */}
+//             {filteredUsers.length > 0 && (
+//               <div className="border-t border-gray-200 px-6 py-4">
+//                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+//                   <div className="text-sm text-gray-600">
+//                     Page <span className="font-semibold">{currentPage}</span> of{' '}
+//                     <span className="font-semibold">{totalPages}</span>
+//                   </div>
+
+//                   <div className="flex items-center gap-2">
+//                     {/* First Page */}
+//                     <button
+//                       onClick={goToFirstPage}
+//                       disabled={currentPage === 1}
+//                       className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+//                     >
+//                       <ChevronsLeft size={16} />
+//                     </button>
+
+//                     {/* Previous Page */}
+//                     <button
+//                       onClick={goToPreviousPage}
+//                       disabled={currentPage === 1}
+//                       className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+//                     >
+//                       <ChevronLeft size={16} />
+//                     </button>
+
+//                     {/* Page Numbers */}
+//                     <div className="flex gap-1">
+//                       {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+//                         <button
+//                           key={page}
+//                           onClick={() => handlePageChange(page)}
+//                           className={`w-8 h-8 rounded-lg text-sm font-medium transition ${
+//                             currentPage === page
+//                               ? 'bg-purple-600 text-white shadow-lg'
+//                               : 'border border-gray-300 hover:bg-gray-50 text-gray-700'
+//                           }`}
+//                         >
+//                           {page}
+//                         </button>
+//                       ))}
+//                     </div>
+
+//                     {/* Next Page */}
+//                     <button
+//                       onClick={goToNextPage}
+//                       disabled={currentPage === totalPages}
+//                       className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+//                     >
+//                       <ChevronRight size={16} />
+//                     </button>
+
+//                     {/* Last Page */}
+//                     <button
+//                       onClick={goToLastPage}
+//                       disabled={currentPage === totalPages}
+//                       className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+//                     >
+//                       <ChevronsRight size={16} />
+//                     </button>
+//                   </div>
+
+//                   <div className="text-sm text-gray-600">
+//                     {usersPerPage} users per page
+//                   </div>
+//                 </div>
+//               </div>
+//             )}
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default UserManagement;
+
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { exportToCSV } from "../utils/exportCSV";
+
+import {
+  Users,
+  RefreshCw,
+  UserCheck,
+  UserX,
   Search,
   Mail,
   Phone,
@@ -18,33 +613,63 @@ import {
   Shield,
   CheckCircle,
   XCircle,
-  MoreVertical,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
-  ChevronsRight
-} from 'lucide-react';
+  ChevronsRight,
+} from "lucide-react";
 
 const UserManagement = () => {
-  const [activeTab, setActiveTab] = useState('active'); // 'active' or 'inactive'
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('name');
-  const [sortOrder, setSortOrder] = useState('asc');
+  const [activeTab, setActiveTab] = useState("active");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("name");
+  const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 5;
+  const [exporting, setExporting] = useState(false);
+  const usersPerPage = 6;
+
+  // download user data with CSV
+
+  const handleExportCSV = async () => {
+    if (filteredUsers.length === 0) {
+      alert("No users to export!");
+      return;
+    }
+
+    setExporting(true);
+
+    try {
+      const result = await exportToCSV(filteredUsers, activeTab, getUserField);
+
+      // Optional: Show success message
+      console.log(`✅ Exported ${result.count} users to ${result.fileName}`);
+
+      // Optional: Show notification
+      if (result.success) {
+        // You can add a toast notification here
+        console.log("Export successful!");
+      }
+    } catch (error) {
+      console.error("Export failed:", error);
+      alert(`Export failed: ${error.message}`);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   // Fetch active users
-  const { 
-    data: activeUsers = [], 
-    isLoading: activeUsersLoading, 
-    error: activeUsersError, 
+  const {
+    data: activeUsers = [],
+    isLoading: activeUsersLoading,
+    error: activeUsersError,
     refetch: refetchActiveUsers,
-    isFetching: activeUsersFetching 
+    isFetching: activeUsersFetching,
   } = useQuery({
-    queryKey: ['active-users'],
+    queryKey: ["active-users"],
     queryFn: async () => {
-      const response = await fetch('https://hor-server.onrender.com/data');
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch("https://api.houseofresha.com/data");
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
       const userData = await response.json();
       let usersArray = userData;
       if (!Array.isArray(userData)) {
@@ -52,22 +677,27 @@ const UserManagement = () => {
       }
       return usersArray;
     },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
     retry: 2,
     refetchOnWindowFocus: false,
   });
 
   // Fetch inactive users
-  const { 
-    data: inactiveUsers = [], 
-    isLoading: inactiveUsersLoading, 
-    error: inactiveUsersError, 
+  const {
+    data: inactiveUsers = [],
+    isLoading: inactiveUsersLoading,
+    error: inactiveUsersError,
     refetch: refetchInactiveUsers,
-    isFetching: inactiveUsersFetching 
+    isFetching: inactiveUsersFetching,
   } = useQuery({
-    queryKey: ['inactive-users'],
+    queryKey: ["inactive-users"],
     queryFn: async () => {
-      const response = await fetch('https://hor-server.onrender.com/inactive-users');
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await fetch(
+        "https://api.houseofresha.com/inactive-users"
+      );
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
       const userData = await response.json();
       let usersArray = userData;
       if (!Array.isArray(userData)) {
@@ -75,55 +705,101 @@ const UserManagement = () => {
       }
       return usersArray;
     },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     retry: 2,
     refetchOnWindowFocus: false,
   });
 
+  // Helper function to get user fields
   const getUserField = (user, fieldNames) => {
     for (let field of fieldNames) {
-      if (user[field] !== undefined && user[field] !== null && user[field] !== '') {
+      if (
+        user[field] !== undefined &&
+        user[field] !== null &&
+        user[field] !== ""
+      ) {
         return user[field];
       }
     }
-    return 'N/A';
+    return "N/A";
   };
 
   const handleRefreshAll = () => {
     refetchActiveUsers();
     refetchInactiveUsers();
-    setCurrentPage(1); // Reset to first page on refresh
+    setCurrentPage(1);
   };
 
   const isLoading = activeUsersLoading || inactiveUsersLoading;
   const isFetching = activeUsersFetching || inactiveUsersFetching;
   const hasError = activeUsersError || inactiveUsersError;
 
-  // Filter users based on search
-  const currentUsers = activeTab === 'active' ? activeUsers : inactiveUsers;
-  
+  // Get current users based on active tab
+  const currentUsers = activeTab === "active" ? activeUsers : inactiveUsers;
+
   // Sort users
   const sortedUsers = [...currentUsers].sort((a, b) => {
-    const aName = getUserField(a, ['firstname', 'firstName', 'first_name', 'fname', 'name']).toLowerCase();
-    const bName = getUserField(b, ['firstname', 'firstName', 'first_name', 'fname', 'name']).toLowerCase();
-    
-    if (sortBy === 'name') {
-      return sortOrder === 'asc' ? aName.localeCompare(bName) : bName.localeCompare(aName);
+    const aName = getUserField(a, [
+      "firstname",
+      "firstName",
+      "first_name",
+      "fname",
+      "name",
+    ]).toLowerCase();
+    const bName = getUserField(b, [
+      "firstname",
+      "firstName",
+      "first_name",
+      "fname",
+      "name",
+    ]).toLowerCase();
+
+    if (sortBy === "name") {
+      return sortOrder === "asc"
+        ? aName.localeCompare(bName)
+        : bName.localeCompare(aName);
     }
     return 0;
   });
 
   // Filter after sorting
-  const filteredUsers = sortedUsers.filter(user => {
+  const filteredUsers = sortedUsers.filter((user) => {
     const searchLower = searchTerm.toLowerCase();
-    const firstName = getUserField(user, ['firstname', 'firstName', 'first_name', 'fname', 'name']).toLowerCase();
-    const lastName = getUserField(user, ['lastname', 'lastName', 'last_name', 'lname', 'surname']).toLowerCase();
-    const email = getUserField(user, ['email', 'emailAddress', 'email_address']).toLowerCase();
-    const phone = getUserField(user, ['phone', 'phoneNumber', 'phone_number', 'number', 'mobile', 'contact']).toLowerCase();
-    
-    return firstName.includes(searchLower) || 
-           lastName.includes(searchLower) || 
-           email.includes(searchLower) || 
-           phone.includes(searchLower);
+    const firstName = getUserField(user, [
+      "firstname",
+      "firstName",
+      "first_name",
+      "fname",
+      "name",
+    ]).toLowerCase();
+    const lastName = getUserField(user, [
+      "lastname",
+      "lastName",
+      "last_name",
+      "lname",
+      "surname",
+    ]).toLowerCase();
+    const email = getUserField(user, [
+      "email",
+      "emailAddress",
+      "email_address",
+    ]).toLowerCase();
+    const phone = getUserField(user, [
+      "phone",
+      "phoneNumber",
+      "phone_number",
+      "number",
+      "mobile",
+      "contact",
+    ]).toLowerCase();
+
+    return (
+      firstName.includes(searchLower) ||
+      lastName.includes(searchLower) ||
+      email.includes(searchLower) ||
+      phone.includes(searchLower)
+    );
   });
 
   // Pagination calculations
@@ -134,12 +810,12 @@ const UserManagement = () => {
 
   const handleSort = (field) => {
     if (sortBy === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
       setSortBy(field);
-      setSortOrder('asc');
+      setSortOrder("asc");
     }
-    setCurrentPage(1); // Reset to first page when sorting
+    setCurrentPage(1);
   };
 
   const handlePageChange = (page) => {
@@ -148,13 +824,21 @@ const UserManagement = () => {
 
   const goToFirstPage = () => setCurrentPage(1);
   const goToLastPage = () => setCurrentPage(totalPages);
-  const goToPreviousPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
-  const goToNextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  const goToPreviousPage = () =>
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  const goToNextPage = () =>
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
 
   // Reset to first page when tab changes or search term changes
   React.useEffect(() => {
     setCurrentPage(1);
   }, [activeTab, searchTerm]);
+
+  // Stats calculations
+  const totalActiveUsers = activeUsers.length;
+  const totalInactiveUsers = inactiveUsers.length;
+  const totalUsers = totalActiveUsers + totalInactiveUsers;
+  const verifiedUsers = Math.round(totalUsers * 0.85);
 
   return (
     <div className="space-y-6">
@@ -172,12 +856,14 @@ const UserManagement = () => {
           </div>
           <div className="flex items-center gap-2 bg-white bg-opacity-20 backdrop-blur-sm px-4 py-2 rounded-lg">
             <Calendar size={20} />
-            <span className="font-medium">{new Date().toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}</span>
+            <span className="font-medium">
+              {new Date().toLocaleDateString("en-US", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </span>
           </div>
         </div>
       </div>
@@ -195,7 +881,9 @@ const UserManagement = () => {
             </div>
           </div>
           <p className="text-gray-600 text-sm font-medium mb-1">Active Users</p>
-          <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">{activeUsers.length}</h3>
+          <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">
+            {isLoading ? "..." : totalActiveUsers}
+          </h3>
         </div>
 
         <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-6 border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
@@ -208,8 +896,12 @@ const UserManagement = () => {
               <span className="text-xs font-bold">-2.1%</span>
             </div>
           </div>
-          <p className="text-gray-600 text-sm font-medium mb-1">Inactive Users</p>
-          <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">{inactiveUsers.length}</h3>
+          <p className="text-gray-600 text-sm font-medium mb-1">
+            Inactive Users
+          </p>
+          <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">
+            {isLoading ? "..." : totalInactiveUsers}
+          </h3>
         </div>
 
         <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
@@ -222,9 +914,11 @@ const UserManagement = () => {
               <span className="text-xs font-bold">+8.7%</span>
             </div>
           </div>
-          <p className="text-gray-600 text-sm font-medium mb-1">Verified Users</p>
+          <p className="text-gray-600 text-sm font-medium mb-1">
+            Verified Users
+          </p>
           <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">
-            {Math.round((activeUsers.length + inactiveUsers.length) * 0.85)}
+            {isLoading ? "..." : verifiedUsers}
           </h3>
         </div>
 
@@ -240,7 +934,7 @@ const UserManagement = () => {
           </div>
           <p className="text-gray-600 text-sm font-medium mb-1">Total Users</p>
           <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">
-            {activeUsers.length + inactiveUsers.length}
+            {isLoading ? "..." : totalUsers}
           </h3>
         </div>
       </div>
@@ -259,12 +953,15 @@ const UserManagement = () => {
                 Monitor and manage your user base effectively
               </p>
             </div>
-            <button 
+            <button
               onClick={handleRefreshAll}
               disabled={isFetching}
               className="flex items-center gap-2 bg-white bg-opacity-20 backdrop-blur-sm hover:bg-opacity-30 px-6 py-3 rounded-lg transition font-semibold disabled:opacity-50"
             >
-              <RefreshCw size={18} className={isFetching ? 'animate-spin' : ''} />
+              <RefreshCw
+                size={18}
+                className={isFetching ? "animate-spin" : ""}
+              />
               <span>Refresh Data</span>
             </button>
           </div>
@@ -274,37 +971,45 @@ const UserManagement = () => {
         <div className="p-6 border-b bg-gray-50">
           <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
             {/* Tabs */}
-            <div className="flex gap-2 bg-white rounded-lg p-1 shadow-inner border border-gray-200">
+            <div className="flex flex-wrap gap-2 bg-white rounded-lg p-1 shadow-inner border border-gray-200">
               <button
-                onClick={() => setActiveTab('active')}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
-                  activeTab === 'active'
-                    ? 'bg-green-500 text-white shadow-lg'
-                    : 'text-gray-600 hover:bg-gray-100'
+                onClick={() => setActiveTab("active")}
+                className={`flex items-center justify-center gap-2 px-3 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg font-semibold transition-all flex-1 min-w-[140px] sm:min-w-0 ${
+                  activeTab === "active"
+                    ? "bg-green-500 text-white shadow-lg"
+                    : "text-gray-600 hover:bg-gray-100"
                 }`}
               >
-                <UserCheck size={18} />
-                <span>Active Users</span>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                  activeTab === 'active' ? 'bg-white text-green-600' : 'bg-gray-200 text-gray-700'
-                }`}>
-                  {activeUsers.length}
+                <UserCheck size={18} className="shrink-0" />
+                <span className="whitespace-nowrap">Active</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-xs font-bold shrink-0 ${
+                    activeTab === "active"
+                      ? "bg-white text-green-600"
+                      : "bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  {totalActiveUsers}
                 </span>
               </button>
               <button
-                onClick={() => setActiveTab('inactive')}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
-                  activeTab === 'inactive'
-                    ? 'bg-red-500 text-white shadow-lg'
-                    : 'text-gray-600 hover:bg-gray-100'
+                onClick={() => setActiveTab("inactive")}
+                className={`flex items-center justify-center gap-2 px-3 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg font-semibold transition-all flex-1 min-w-[140px] sm:min-w-0 ${
+                  activeTab === "inactive"
+                    ? "bg-red-500 text-white shadow-lg"
+                    : "text-gray-600 hover:bg-gray-100"
                 }`}
               >
-                <UserX size={18} />
-                <span>Inactive Users</span>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                  activeTab === 'inactive' ? 'bg-white text-red-600' : 'bg-gray-200 text-gray-700'
-                }`}>
-                  {inactiveUsers.length}
+                <UserX size={18} className="shrink-0" />
+                <span className="whitespace-nowrap">Inactive</span>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-xs font-bold shrink-0 ${
+                    activeTab === "inactive"
+                      ? "bg-white text-red-600"
+                      : "bg-gray-200 text-gray-700"
+                  }`}
+                >
+                  {totalInactiveUsers}
                 </span>
               </button>
             </div>
@@ -312,47 +1017,114 @@ const UserManagement = () => {
             {/* Search & Filter */}
             <div className="flex flex-col sm:flex-row gap-3 flex-1 lg:max-w-2xl">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={20}
+                />
                 <input
                   type="text"
                   placeholder="Search users by name, email, or phone..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white shadow-sm"
+                  className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white shadow-sm"
                 />
+                {/* X button to clear search */}
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    aria-label="Clear search"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </button>
+                )}
               </div>
-              <button className="flex items-center gap-2 px-4 py-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition font-medium">
-                <Filter size={18} />
-                <span>Filter</span>
+
+              <button
+                onClick={() => handleExportCSV()}
+                disabled={isLoading || exporting || filteredUsers.length === 0}
+                className="relative flex items-center justify-center gap-2 px-4 py-3 min-w-[100px] sm:min-w-[130px] bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg transition-all duration-300 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+              >
+                {/* Icon */}
+                <div className="relative">
+                  {exporting ? (
+                    <div className="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+                  ) : (
+                    <Download size={18} />
+                  )}
+                </div>
+
+                {/* Text */}
+                <span className="hidden sm:inline">
+                  {exporting ? "Exporting..." : "Export CSV"}
+                </span>
+                <span className="sm:hidden">
+                  {exporting ? "..." : "Export"}
+                </span>
+
+                {/* User count badge */}
+                {!exporting && filteredUsers.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-white text-purple-600 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-sm">
+                    {filteredUsers.length}
+                  </span>
+                )}
               </button>
             </div>
 
             {/* Export Button */}
-            <button className="flex items-center gap-2 px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition font-medium shadow-lg">
+            {/* <button className="flex items-center gap-2 px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition font-medium shadow-lg">
               <Download size={18} />
               <span className="hidden sm:inline">Export CSV</span>
-            </button>
+            </button> */}
           </div>
 
           {/* Results Info */}
           <div className="mt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="text-sm text-gray-600">
-              Showing <span className="font-semibold text-gray-900">{startIndex + 1}-{Math.min(endIndex, filteredUsers.length)}</span> of{' '}
-              <span className="font-semibold text-gray-900">{filteredUsers.length}</span> users
+              Showing{" "}
+              <span className="font-semibold text-gray-900">
+                {startIndex + 1}-{Math.min(endIndex, filteredUsers.length)}
+              </span>{" "}
+              of{" "}
+              <span className="font-semibold text-gray-900">
+                {filteredUsers.length}
+              </span>{" "}
+              users
               {searchTerm && (
-                <span> matching "<span className="font-semibold text-gray-900">{searchTerm}</span>"</span>
+                <span>
+                  {" "}
+                  matching "
+                  <span className="font-semibold text-gray-900">
+                    {searchTerm}
+                  </span>
+                  "
+                </span>
               )}
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600">Sort by:</span>
               <button
-                onClick={() => handleSort('name')}
+                onClick={() => handleSort("name")}
                 className="flex items-center gap-1 px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm font-medium"
               >
                 Name
-                {sortBy === 'name' && (
-                  sortOrder === 'asc' ? <ArrowUp size={14} /> : <ArrowDown size={14} />
-                )}
+                {sortBy === "name" &&
+                  (sortOrder === "asc" ? (
+                    <ArrowUp size={14} />
+                  ) : (
+                    <ArrowDown size={14} />
+                  ))}
               </button>
             </div>
           </div>
@@ -375,11 +1147,13 @@ const UserManagement = () => {
               <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
                 <Activity className="text-red-600" size={32} />
               </div>
-              <h3 className="text-lg font-bold text-red-800 mb-2">Error Loading Users</h3>
+              <h3 className="text-lg font-bold text-red-800 mb-2">
+                Error Loading Users
+              </h3>
               <p className="text-red-600 mb-4">
                 {activeUsersError?.message || inactiveUsersError?.message}
               </p>
-              <button 
+              <button
                 onClick={handleRefreshAll}
                 className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition font-semibold shadow-lg"
               >
@@ -393,9 +1167,11 @@ const UserManagement = () => {
         {!isLoading && !hasError && (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className={`${
-                activeTab === 'active' ? 'bg-green-50' : 'bg-red-50'
-              }`}>
+              <thead
+                className={`${
+                  activeTab === "active" ? "bg-green-50" : "bg-red-50"
+                }`}
+              >
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-700">
                     User
@@ -413,25 +1189,52 @@ const UserManagement = () => {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {currentUsersPage.map((user, index) => (
-                  <tr 
-                    key={user.id || user._id || index} 
-                    className={`hover:${activeTab === 'active' ? 'bg-green-50' : 'bg-red-50'} transition-colors`}
+                  <tr
+                    key={user.id || user._id || index}
+                    className={`hover:${
+                      activeTab === "active" ? "bg-green-50" : "bg-red-50"
+                    } transition-colors`}
                   >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 rounded-full ${
-                          activeTab === 'active' ? 'bg-green-100' : 'bg-red-100'
-                        } flex items-center justify-center font-bold text-lg ${
-                          activeTab === 'active' ? 'text-green-700' : 'text-red-700'
-                        }`}>
-                          {getUserField(user, ['firstname', 'firstName', 'first_name', 'fname', 'name']).charAt(0)}
+                        <div
+                          className={`w-12 h-12 rounded-full ${
+                            activeTab === "active"
+                              ? "bg-green-100"
+                              : "bg-red-100"
+                          } flex items-center justify-center font-bold text-lg ${
+                            activeTab === "active"
+                              ? "text-green-700"
+                              : "text-red-700"
+                          }`}
+                        >
+                          {getUserField(user, [
+                            "firstname",
+                            "firstName",
+                            "first_name",
+                            "fname",
+                            "name",
+                          ]).charAt(0)}
                         </div>
                         <div>
                           <div className="text-sm font-semibold text-gray-900">
-                            {getUserField(user, ['firstname', 'firstName', 'first_name', 'fname', 'name'])} {getUserField(user, ['lastname', 'lastName', 'last_name', 'lname', 'surname'])}
+                            {getUserField(user, [
+                              "firstname",
+                              "firstName",
+                              "first_name",
+                              "fname",
+                              "name",
+                            ])}{" "}
+                            {getUserField(user, [
+                              "lastname",
+                              "lastName",
+                              "last_name",
+                              "lname",
+                              "surname",
+                            ])}
                           </div>
                           <div className="text-xs text-gray-500 mt-1">
-                            User ID: {user.id || user._id || 'N/A'}
+                            User ID: {user.id || user._id || "N/A"}
                           </div>
                         </div>
                       </div>
@@ -440,22 +1243,35 @@ const UserManagement = () => {
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 text-sm text-gray-700">
                           <Mail size={14} className="text-gray-400" />
-                          {getUserField(user, ['email', 'emailAddress', 'email_address'])}
+                          {getUserField(user, [
+                            "email",
+                            "emailAddress",
+                            "email_address",
+                          ])}
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-700">
                           <Phone size={14} className="text-gray-400" />
-                          {getUserField(user, ['phone', 'phoneNumber', 'phone_number', 'number', 'mobile', 'contact'])}
+                          {getUserField(user, [
+                            "phone",
+                            "phoneNumber",
+                            "phone_number",
+                            "number",
+                            "mobile",
+                            "contact",
+                          ])}
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
                       <div className="flex items-center gap-2">
-                        <div className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
-                          activeTab === 'active' 
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-red-100 text-red-700'
-                        }`}>
-                          {activeTab === 'active' ? (
+                        <div
+                          className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${
+                            activeTab === "active"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {activeTab === "active" ? (
                             <>
                               <CheckCircle size={12} />
                               Active
@@ -468,7 +1284,9 @@ const UserManagement = () => {
                           )}
                         </div>
                         <div className="text-xs text-gray-500">
-                          {user.lastLogin ? 'Recently active' : 'No recent activity'}
+                          {user.lastLogin
+                            ? "Recently active"
+                            : "No recent activity"}
                         </div>
                       </div>
                     </td>
@@ -477,9 +1295,6 @@ const UserManagement = () => {
                         <button className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-600 hover:bg-purple-100 rounded-lg transition text-sm font-medium">
                           <Eye size={14} />
                           <span className="hidden sm:inline">View</span>
-                        </button>
-                        <button className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-600 hover:bg-gray-100 rounded-lg transition text-sm font-medium">
-                          <MoreVertical size={14} />
                         </button>
                       </div>
                     </td>
@@ -491,10 +1306,12 @@ const UserManagement = () => {
             {filteredUsers.length === 0 && (
               <div className="text-center py-16">
                 <div className="inline-flex flex-col items-center gap-4">
-                  <div className={`w-20 h-20 rounded-full ${
-                    activeTab === 'active' ? 'bg-green-100' : 'bg-red-100'
-                  } flex items-center justify-center`}>
-                    {activeTab === 'active' ? (
+                  <div
+                    className={`w-20 h-20 rounded-full ${
+                      activeTab === "active" ? "bg-green-100" : "bg-red-100"
+                    } flex items-center justify-center`}
+                  >
+                    {activeTab === "active" ? (
                       <UserCheck className="text-green-600" size={40} />
                     ) : (
                       <UserX className="text-red-600" size={40} />
@@ -502,10 +1319,12 @@ const UserManagement = () => {
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-gray-800 mb-1">
-                      {searchTerm ? 'No users found' : `No ${activeTab} users`}
+                      {searchTerm ? "No users found" : `No ${activeTab} users`}
                     </h3>
                     <p className="text-gray-500 text-sm">
-                      {searchTerm ? 'Try adjusting your search' : `There are no ${activeTab} users at the moment`}
+                      {searchTerm
+                        ? "Try adjusting your search"
+                        : `There are no ${activeTab} users at the moment`}
                     </p>
                   </div>
                 </div>
@@ -517,10 +1336,10 @@ const UserManagement = () => {
               <div className="border-t border-gray-200 px-6 py-4">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="text-sm text-gray-600">
-                    Page <span className="font-semibold">{currentPage}</span> of{' '}
+                    Page <span className="font-semibold">{currentPage}</span> of{" "}
                     <span className="font-semibold">{totalPages}</span>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     {/* First Page */}
                     <button
@@ -542,19 +1361,21 @@ const UserManagement = () => {
 
                     {/* Page Numbers */}
                     <div className="flex gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                        <button
-                          key={page}
-                          onClick={() => handlePageChange(page)}
-                          className={`w-8 h-8 rounded-lg text-sm font-medium transition ${
-                            currentPage === page
-                              ? 'bg-purple-600 text-white shadow-lg'
-                              : 'border border-gray-300 hover:bg-gray-50 text-gray-700'
-                          }`}
-                        >
-                          {page}
-                        </button>
-                      ))}
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (page) => (
+                          <button
+                            key={page}
+                            onClick={() => handlePageChange(page)}
+                            className={`w-8 h-8 rounded-lg text-sm font-medium transition ${
+                              currentPage === page
+                                ? "bg-purple-600 text-white shadow-lg"
+                                : "border border-gray-300 hover:bg-gray-50 text-gray-700"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        )
+                      )}
                     </div>
 
                     {/* Next Page */}
