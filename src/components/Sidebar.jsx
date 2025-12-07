@@ -145,12 +145,12 @@ const Sidebar = ({ isOpen, toggle }) => {
             </div>
 
             {/* Body */}
-            <div className="p-6">
+            {/* <div className="p-6">
               <p className="text-gray-700">
                 You will be redirected to the login page and will need to enter your
                 credentials again to access the admin panel.
               </p>
-            </div>
+            </div> */}
 
             {/* Footer */}
             <div className="flex flex-col sm:flex-row gap-3 p-6 border-t border-gray-200">

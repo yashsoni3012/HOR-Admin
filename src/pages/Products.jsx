@@ -440,7 +440,7 @@ const Products = () => {
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 flex items-center gap-2">
             <Package className="text-purple-600" size={32} />
-            Product Management
+            Fassion Management
           </h1>
           <p className="text-gray-600 text-sm mt-1">
             Manage your products, inventory, and categories

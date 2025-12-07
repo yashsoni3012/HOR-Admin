@@ -265,6 +265,74 @@ const toggleBannerStatus = async ({ bannerId, isActive }) => {
   }
 };
 
+//to fetch all categories
+
+// Update your fetchCategories function to properly handle the response
+const fetchCategories = async () => {
+  try {
+    console.log("📡 Fetching categories from API...");
+
+    // Fetch categories from the API endpoint
+    const response = await fetch(
+      "https://api.houseofresha.com/banner/?category"
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch categories: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+    console.log("✅ Categories API Response:", data);
+    console.log("📊 Categories response type:", typeof data);
+    console.log("📊 Is array?", Array.isArray(data));
+
+    // If the API returns a simple array of strings like ["men", "women", "unisex"]
+    if (Array.isArray(data)) {
+      return data.map((item) => {
+        // If it's already a string, return it
+        if (typeof item === "string") {
+          return item;
+        }
+        // If it's an object, try to extract the value
+        else if (item && typeof item === "object") {
+          return (
+            item.value || item.name || item.category || JSON.stringify(item)
+          );
+        }
+        // Fallback
+        return String(item);
+      });
+    }
+    // If the API returns an object with categories property
+    else if (data && typeof data === "object") {
+      // Try different possible property names
+      const categoriesArray =
+        data.categories || data.data || data.values || Object.values(data);
+      if (Array.isArray(categoriesArray)) {
+        return categoriesArray.map((item) => {
+          if (typeof item === "string") {
+            return item;
+          } else if (item && typeof item === "object") {
+            return (
+              item.value || item.name || item.category || JSON.stringify(item)
+            );
+          }
+          return String(item);
+        });
+      }
+    }
+
+    console.warn("⚠️ Unexpected categories API response structure:", data);
+    return ["men", "women", "unisex", "glow-ritual", "home"]; // Fallback
+  } catch (error) {
+    console.error("❌ Error fetching categories:", error);
+    // Return fallback categories if API fails
+    return ["men", "women", "unisex", "glow-ritual", "home"];
+  }
+};
+
 // ============== MAIN COMPONENT ==============
 
 const BannerManager = () => {
@@ -279,7 +347,7 @@ const BannerManager = () => {
   // Form state
   const [formData, setFormData] = useState({
     title: "",
-    category: "men",
+    category: "",
     description: "",
     buttonText: "Shop Now",
     buttonLink: "",
@@ -288,25 +356,14 @@ const BannerManager = () => {
     videoFile: null,
   });
 
-  // Categories
-  const categories = [
-    { value: "men", label: "For Men" },
-    { value: "women", label: "For Women" },
-    { value: "unisex", label: "Unisex" },
-    { value: "glow-ritual", label: "Glow Ritual" },
-    { value: "featured", label: "Featured" },
-    { value: "new-arrivals", label: "New Arrivals" },
-    { value: "sale", label: "Sale" },
-  ];
-
   // ============== TANSTACK QUERY ==============
 
   // GET: Fetch all banners
   const {
     data: apiResponse = { success: false, banners: [] },
-    isLoading,
-    error,
-    refetch,
+    isLoading: bannersLoading,
+    error: bannersError,
+    refetch: refetchBanners,
   } = useQuery({
     queryKey: ["banners"],
     queryFn: fetchBanners,
@@ -314,6 +371,93 @@ const BannerManager = () => {
     refetchOnWindowFocus: false,
     staleTime: 30000, // 30 seconds
   });
+
+  // GET: Fetch categories from API
+  const {
+    data: apiCategories = [],
+    isLoading: categoriesLoading,
+    error: categoriesError,
+    refetch: refetchCategories,
+  } = useQuery({
+    queryKey: ["categories"],
+    queryFn: fetchCategories,
+    retry: 2,
+    refetchOnWindowFocus: false,
+    staleTime: 60000, // 1 minute
+  });
+
+  // Format categories for dropdown
+  // In your BannerManager component, update the categories formatting:
+
+  const categories = React.useMemo(() => {
+    if (!apiCategories || apiCategories.length === 0) {
+      console.log("❌ No categories received from API");
+      return [
+        { value: "men", label: "Men" },
+        { value: "women", label: "Women" },
+        { value: "unisex", label: "Unisex" },
+      ];
+    }
+
+    console.log("📊 Raw API categories:", apiCategories);
+
+    // Process categories and remove duplicates
+    const categoryMap = new Map();
+
+    apiCategories.forEach((cat, index) => {
+      let value, label;
+
+      // Extract value and label based on category type
+      if (typeof cat === "string") {
+        value = cat.toLowerCase().replace(/\s+/g, "-");
+        label = cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, " ");
+      }
+      // If cat is an object with value property
+      else if (cat && typeof cat === "object" && cat.value) {
+        value = cat.value;
+        label =
+          cat.label ||
+          cat.name ||
+          cat.value.charAt(0).toUpperCase() + cat.value.slice(1);
+      }
+      // If cat is an object with name property
+      else if (cat && typeof cat === "object" && cat.name) {
+        value = cat.name.toLowerCase().replace(/\s+/g, "-");
+        label = cat.name.charAt(0).toUpperCase() + cat.name.slice(1);
+      }
+      // If cat is an object but we don't know its structure
+      else if (cat && typeof cat === "object") {
+        // Try to extract value from object
+        value = cat._id || `category-${index}`;
+        label = cat.label || cat.name || cat.title || `Category ${index + 1}`;
+      }
+      // Fallback
+      else {
+        value = String(cat);
+        label = String(cat).charAt(0).toUpperCase() + String(cat).slice(1);
+      }
+
+      // Only add to map if not already present (removes duplicates)
+      if (value && !categoryMap.has(value)) {
+        categoryMap.set(value, { value, label });
+      }
+    });
+
+    // Convert map back to array
+    const formatted = Array.from(categoryMap.values());
+
+    console.log("📋 Formatted categories (duplicates removed):", formatted);
+    return formatted;
+  }, [apiCategories]);
+  // Set default category when categories load
+  useEffect(() => {
+    if (categories.length > 0 && !formData.category) {
+      setFormData((prev) => ({
+        ...prev,
+        category: categories[0].value,
+      }));
+    }
+  }, [categories, formData.category]);
 
   // Process banners data
   const banners = React.useMemo(() => {
@@ -428,7 +572,8 @@ const BannerManager = () => {
     setEditingBanner(banner);
     setFormData({
       title: banner.title || "",
-      category: banner.category || "men",
+      category:
+        banner.category || (categories.length > 0 ? categories[0].value : ""),
       description: banner.description || "",
       buttonText: banner.buttonText || "Shop Now",
       buttonLink: banner.buttonLink || "",
@@ -523,6 +668,10 @@ const BannerManager = () => {
         "Please enter a valid URL starting with http:// or https://";
     }
 
+    if (!formData.category.trim()) {
+      newErrors.category = "Category is required";
+    }
+
     if (formData.description.length > 500) {
       newErrors.description = "Description should be less than 500 characters";
     }
@@ -558,7 +707,7 @@ const BannerManager = () => {
   const resetForm = () => {
     setFormData({
       title: "",
-      category: "men",
+      category: categories.length > 0 ? categories[0].value : "",
       description: "",
       buttonText: "Shop Now",
       buttonLink: "",
@@ -608,6 +757,10 @@ const BannerManager = () => {
     };
   }, [videoPreview]);
 
+  // Combined loading state
+  const isLoading = bannersLoading || categoriesLoading;
+  const error = bannersError || categoriesError;
+
   // ============== UI COMPONENTS ==============
 
   // Banner Card Component
@@ -617,6 +770,22 @@ const BannerManager = () => {
 
     const createdAt = banner.createdAt ? new Date(banner.createdAt) : null;
     const updatedAt = banner.updatedAt ? new Date(banner.updatedAt) : null;
+
+    // Find category label
+    const getCategoryLabel = () => {
+      if (!banner.category) return "General";
+
+      const foundCategory = categories.find(
+        (cat) => cat.value === banner.category
+      );
+      if (foundCategory) return foundCategory.label;
+
+      // Format category string if not found
+      return banner.category
+        .split("-")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+    };
 
     return (
       <div
@@ -642,7 +811,7 @@ const BannerManager = () => {
 
         {/* Category Badge */}
         <span className="absolute top-3 right-3 px-3 py-1.5 bg-purple-500 text-white text-xs font-bold rounded-full shadow-lg capitalize z-10">
-          {banner.category || "general"}
+          {getCategoryLabel()}
         </span>
 
         {/* Video Section */}
@@ -757,7 +926,11 @@ const BannerManager = () => {
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-purple-500 border-t-transparent mb-6"></div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            Loading Banners
+            {bannersLoading && categoriesLoading
+              ? "Loading Banners and Categories..."
+              : bannersLoading
+              ? "Loading Banners..."
+              : "Loading Categories..."}
           </h2>
           <p className="text-gray-600">Fetching data from your API...</p>
           <p className="text-sm text-gray-500 mt-2">{API_BASE_URL}/banner</p>
@@ -780,24 +953,34 @@ const BannerManager = () => {
             <p className="text-red-600 mb-4">{error.message}</p>
             <div className="space-y-3">
               <button
-                onClick={() => refetch()}
+                onClick={() => {
+                  refetchBanners();
+                  refetchCategories();
+                }}
                 className="w-full py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-xl font-bold hover:shadow-xl transition-all flex items-center justify-center gap-2"
               >
                 <RefreshCw size={18} />
                 Retry Connection
               </button>
-              <button
-                onClick={() => window.open(`${API_BASE_URL}/banner`, "_blank")}
-                className="w-full py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition flex items-center justify-center gap-2"
-              >
-                <ExternalLink size={18} />
-                Test API in Browser
-              </button>
+              {categoriesError && (
+                <button
+                  onClick={() => refetchCategories()}
+                  className="w-full py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-bold hover:bg-gray-50 transition flex items-center justify-center gap-2"
+                >
+                  <RefreshCw size={18} />
+                  Retry Categories Only
+                </button>
+              )}
             </div>
             <div className="mt-6 p-3 bg-gray-100 rounded-lg">
               <p className="text-xs text-gray-600 font-mono break-all">
                 API Endpoint: {API_BASE_URL}/banner
               </p>
+              {categoriesError && (
+                <p className="text-xs text-gray-600 font-mono break-all mt-2">
+                  Categories Endpoint: {API_BASE_URL}/banner/?category
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -836,6 +1019,12 @@ const BannerManager = () => {
                     {banners.filter((b) => b.isActive).length}
                   </div>
                   <div className="text-xs text-gray-600">Active</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-600">
+                    {categories.length}
+                  </div>
+                  <div className="text-xs text-gray-600">Categories</div>
                 </div>
               </div>
 
@@ -877,8 +1066,22 @@ const BannerManager = () => {
             </div>
 
             <div className="flex items-center gap-3">
+              {categoriesError && (
+                <button
+                  onClick={() => refetchCategories()}
+                  className="px-3 py-1.5 bg-yellow-100 text-yellow-700 text-xs rounded-lg hover:bg-yellow-200 transition flex items-center gap-2"
+                  title="Retry loading categories"
+                >
+                  <RefreshCw size={14} />
+                  <span className="hidden sm:inline">Retry Categories</span>
+                </button>
+              )}
+
               <button
-                onClick={() => refetch()}
+                onClick={() => {
+                  refetchBanners();
+                  refetchCategories();
+                }}
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition flex items-center gap-2"
                 title="Refresh Data"
               >
@@ -906,11 +1109,11 @@ const BannerManager = () => {
                 ))}
               </div>
 
-              <div className="mt-8 pt-6 border-t border-gray-200 text-center">
+              {/* <div className="mt-8 pt-6 border-t border-gray-200 text-center">
                 <p className="text-gray-600 text-sm">
                   Showing {banners.length} banners • API: {API_BASE_URL}/banner
                 </p>
-              </div>
+              </div> */}
             </>
           ) : (
             <div className="text-center py-16">
@@ -937,15 +1140,15 @@ const BannerManager = () => {
 
       {/* Add/Edit Banner Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4">
+          <div className="bg-white rounded-2xl w-full max-w-full sm:max-w-4xl mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
             {/* Modal Header */}
-            <div className="sticky top-0 bg-white border-b border-gray-200 rounded-t-2xl p-6 flex items-center justify-between z-10">
+            <div className="sticky top-0 bg-white border-b border-gray-200 rounded-t-2xl p-4 sm:p-6 flex items-center justify-between z-10">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
                   {editingBanner ? "Edit Banner" : "Create New Banner"}
                 </h2>
-                <p className="text-gray-600 text-sm mt-1">
+                <p className="text-gray-600 text-xs sm:text-sm mt-1">
                   {editingBanner
                     ? `Editing: ${editingBanner.title}`
                     : "Fill in the form below to create a new banner"}
@@ -953,38 +1156,35 @@ const BannerManager = () => {
               </div>
               <button
                 onClick={resetForm}
-                className="p-2 hover:bg-gray-100 rounded-xl transition"
+                className="p-1 sm:p-2 hover:bg-gray-100 rounded-xl transition"
                 disabled={createMutation.isLoading || updateMutation.isLoading}
               >
-                <X size={24} />
+                <X size={20} className="sm:w-6 sm:h-6" />
               </button>
             </div>
 
             {/* Modal Content */}
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               {/* Video Preview Section */}
               {videoPreview && (
-                <div className="mb-8">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <Video className="text-purple-600" size={20} />
+                <div className="mb-6 sm:mb-8">
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
+                    <Video className="text-purple-600" size={18} />
                     Video Preview
                   </h3>
                   <div className="relative rounded-xl overflow-hidden shadow-xl bg-gradient-to-br from-gray-900 to-gray-800">
                     <video
                       src={videoPreview}
-                      className="w-full h-48 object-cover"
+                      className="w-full h-40 sm:h-48 object-cover"
                       controls
                       muted
                       playsInline
                     />
-                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white bg-gradient-to-t from-black/60 to-transparent">
-                      <h3 className="text-xl font-bold mb-2">
+                    <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 text-white bg-gradient-to-t from-black/60 to-transparent">
+                      <h3 className="text-lg sm:text-xl font-bold mb-2">
                         {formData.title || "Banner Title"}
                       </h3>
-                      <p className="text-sm mb-4 opacity-90 line-clamp-2">
-                        {formData.description || "Banner description..."}
-                      </p>
-                      <button className="px-6 py-2 bg-white text-gray-900 rounded-lg font-bold hover:bg-gray-100 transition">
+                      <button className="px-4 sm:px-6 py-2 bg-white text-gray-900 rounded-lg font-bold hover:bg-gray-100 transition text-sm sm:text-base">
                         {formData.buttonText || "Shop Now"} →
                       </button>
                     </div>
@@ -993,13 +1193,13 @@ const BannerManager = () => {
               )}
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                   {/* Left Column */}
-                  <div className="space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
                     {/* Title */}
                     <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">
+                      <label className="block text-sm font-bold text-gray-700 mb-1 sm:mb-2">
                         Banner Title *
                       </label>
                       <input
@@ -1007,182 +1207,97 @@ const BannerManager = () => {
                         name="title"
                         value={formData.title}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition ${
+                        className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition text-sm sm:text-base ${
                           errors.title ? "border-red-500" : "border-gray-300"
                         }`}
                         placeholder="Enter banner title"
                         maxLength={100}
                       />
                       {errors.title && (
-                        <p className="text-red-500 text-sm mt-2">
+                        <p className="text-red-500 text-xs sm:text-sm mt-1 sm:mt-2">
                           {errors.title}
                         </p>
                       )}
-                      <p className="text-gray-500 text-xs mt-2">
+                      <p className="text-gray-500 text-xs mt-1 sm:mt-2">
                         {formData.title.length}/100 characters
                       </p>
                     </div>
 
-                    {/* Category & Position */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">
-                          Category
-                        </label>
+                    {/* Category - Fetched from API */}
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-1 sm:mb-2">
+                        Category *
+                      </label>
+
+                      {categoriesLoading ? (
+                        <div className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-300 rounded-xl bg-gray-50">
+                          <div className="w-4 h-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                          <span className="text-sm text-gray-600">
+                            Loading categories...
+                          </span>
+                        </div>
+                      ) : categoriesError ? (
+                        <div className="space-y-2">
+                          <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <div className="flex items-center gap-2 text-yellow-700 text-sm">
+                              <AlertCircle size={16} />
+                              <span>Using fallback categories</span>
+                            </div>
+                          </div>
+                          {/* In your dropdown - Add index to make keys unique */}
+                          <select
+                            name="category"
+                            value={formData.category}
+                            onChange={handleInputChange}
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm sm:text-base"
+                          >
+                            <option value="">Select a category</option>
+                            {categories.map((cat, index) => (
+                              <option
+                                key={`${cat.value}-${index}`}
+                                value={cat.value}
+                              >
+                                {" "}
+                                {/* Add index to key */}
+                                {cat.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      ) : categories.length === 0 ? (
+                        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-700 text-sm">
+                          No categories available in API
+                        </div>
+                      ) : (
                         <select
                           name="category"
                           value={formData.category}
                           onChange={handleInputChange}
-                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
+                          className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm sm:text-base ${
+                            errors.category
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
+                          required
                         >
+                          <option value="">Select a category *</option>
                           {categories.map((cat) => (
                             <option key={cat.value} value={cat.value}>
                               {cat.label}
                             </option>
                           ))}
                         </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">
-                          Position
-                        </label>
-                        <select
-                          name="position"
-                          value={formData.position}
-                          onChange={handleInputChange}
-                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
-                        >
-                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((pos) => (
-                            <option key={pos} value={pos}>
-                              Position {pos}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Description */}
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">
-                        Description
-                      </label>
-                      <textarea
-                        name="description"
-                        value={formData.description}
-                        onChange={handleInputChange}
-                        rows={4}
-                        className={`w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none resize-none ${
-                          errors.description ? "border-red-500" : ""
-                        }`}
-                        placeholder="Enter banner description (optional)"
-                        maxLength={500}
-                      />
-                      {errors.description && (
-                        <p className="text-red-500 text-sm mt-2">
-                          {errors.description}
-                        </p>
                       )}
-                      <p className="text-gray-500 text-xs mt-2">
-                        {formData.description.length}/500 characters
-                      </p>
-                    </div>
-                  </div>
 
-                  {/* Right Column */}
-                  <div className="space-y-6">
-                    {/* Button Text & Link */}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">
-                          Button Text *
-                        </label>
-                        <input
-                          type="text"
-                          name="buttonText"
-                          value={formData.buttonText}
-                          onChange={handleInputChange}
-                          className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none ${
-                            errors.buttonText
-                              ? "border-red-500"
-                              : "border-gray-300"
-                          }`}
-                          placeholder="e.g., Shop Now"
-                          maxLength={30}
-                        />
-                        {errors.buttonText && (
-                          <p className="text-red-500 text-sm mt-2">
-                            {errors.buttonText}
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-2">
-                          Button Link *
-                        </label>
-                        <input
-                          type="url"
-                          name="buttonLink"
-                          value={formData.buttonLink}
-                          onChange={handleInputChange}
-                          className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none ${
-                            errors.buttonLink
-                              ? "border-red-500"
-                              : "border-gray-300"
-                          }`}
-                          placeholder="https://example.com"
-                        />
-                        {errors.buttonLink && (
-                          <p className="text-red-500 text-sm mt-2">
-                            {errors.buttonLink}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Video Upload */}
-                    <div>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">
-                        Upload Video
-                      </label>
-                      <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-purple-400 transition cursor-pointer bg-gradient-to-br from-gray-50 to-white">
-                        <input
-                          type="file"
-                          accept="video/*"
-                          onChange={handleVideoUpload}
-                          className="hidden"
-                          id="videoUpload"
-                        />
-                        <label
-                          htmlFor="videoUpload"
-                          className="cursor-pointer flex flex-col items-center gap-3"
-                        >
-                          <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center">
-                            <Upload size={28} className="text-purple-600" />
-                          </div>
-                          <div>
-                            <p className="text-gray-700 font-semibold">
-                              Click to upload video
-                            </p>
-                            <p className="text-gray-500 text-sm mt-1">
-                              MP4, WebM, OGG, MOV, AVI • Max 50MB
-                            </p>
-                          </div>
-                          {editingBanner?.videoUrl && !formData.videoFile && (
-                            <p className="text-green-600 text-sm mt-2">
-                              Current video will be kept
-                            </p>
-                          )}
-                        </label>
-                      </div>
-                      {errors.video && (
-                        <p className="text-red-500 text-sm mt-2">
-                          {errors.video}
+                      {errors.category && (
+                        <p className="text-red-500 text-xs sm:text-sm mt-1 sm:mt-2">
+                          {errors.category}
                         </p>
                       )}
                     </div>
 
                     {/* Active Status */}
-                    <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border-2 border-purple-100">
+                    <div className="flex items-center gap-3 p-3 sm:p-4">
                       <div className="relative">
                         <input
                           type="checkbox"
@@ -1194,27 +1309,127 @@ const BannerManager = () => {
                         />
                         <label
                           htmlFor="isActiveToggle"
-                          className={`block w-14 h-8 rounded-full cursor-pointer transition-all duration-300 ${
+                          className={`block w-12 h-6 sm:w-14 sm:h-8 md:w-16 md:h-9 rounded-full cursor-pointer transition-all duration-300 ${
                             formData.isActive ? "bg-green-500" : "bg-gray-300"
                           }`}
                         >
                           <span
-                            className={`block w-6 h-6 mt-1 ml-1 rounded-full bg-white transition-all duration-300 transform ${
-                              formData.isActive ? "translate-x-6" : ""
+                            className={`absolute top-0.5 left-0.5 sm:top-1 sm:left-1 md:top-1 md:left-1 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 bg-white rounded-full shadow transition-all duration-300 transform ${
+                              formData.isActive
+                                ? "translate-x-6 sm:translate-x-7 md:translate-x-8"
+                                : ""
                             }`}
                           ></span>
                         </label>
                       </div>
+
                       <div>
-                        <label className="text-sm font-bold text-gray-700 block">
-                          Set as Active
-                        </label>
-                        <p className="text-gray-500 text-xs">
+                        <p className="text-sm font-medium text-gray-800">
+                          {formData.isActive ? "Active" : "Inactive"}
+                        </p>
+                        <p className="text-xs text-gray-600">
                           {formData.isActive
-                            ? "Banner will be visible on the website"
-                            : "Banner will be hidden"}
+                            ? "Visible on site"
+                            : "Hidden from site"}
                         </p>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column */}
+                  <div className="space-y-4 sm:space-y-6">
+                    {/* Button Text & Link */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1 sm:mb-2">
+                          Button Text *
+                        </label>
+                        <input
+                          type="text"
+                          name="buttonText"
+                          value={formData.buttonText}
+                          onChange={handleInputChange}
+                          className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm sm:text-base ${
+                            errors.buttonText
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
+                          placeholder="e.g., Shop Now"
+                          maxLength={30}
+                        />
+                        {errors.buttonText && (
+                          <p className="text-red-500 text-xs sm:text-sm mt-1 sm:mt-2">
+                            {errors.buttonText}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-1 sm:mb-2">
+                          Button Link *
+                        </label>
+                        <input
+                          type="url"
+                          name="buttonLink"
+                          value={formData.buttonLink}
+                          onChange={handleInputChange}
+                          className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-sm sm:text-base ${
+                            errors.buttonLink
+                              ? "border-red-500"
+                              : "border-gray-300"
+                          }`}
+                          placeholder="https://example.com"
+                        />
+                        {errors.buttonLink && (
+                          <p className="text-red-500 text-xs sm:text-sm mt-1 sm:mt-2">
+                            {errors.buttonLink}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Video Upload */}
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 mb-1 sm:mb-2">
+                        Upload Video
+                      </label>
+                      <div className="border-2 border-dashed border-gray-300 rounded-xl p-3 sm:p-4 md:p-6 text-center hover:border-purple-400 transition cursor-pointer bg-gradient-to-br from-gray-50 to-white">
+                        <input
+                          type="file"
+                          accept="video/*"
+                          onChange={handleVideoUpload}
+                          className="hidden"
+                          id="videoUpload"
+                        />
+                        <label
+                          htmlFor="videoUpload"
+                          className="cursor-pointer flex flex-col items-center gap-2 sm:gap-3"
+                        >
+                          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center">
+                            <Upload
+                              size={20}
+                              className="sm:w-7 sm:h-7 text-purple-600"
+                            />
+                          </div>
+                          <div>
+                            <p className="text-gray-700 font-semibold text-sm sm:text-base">
+                              Click to upload video
+                            </p>
+                            <p className="text-gray-500 text-xs sm:text-sm mt-1">
+                              MP4, WebM, OGG, MOV, AVI • Max 50MB
+                            </p>
+                          </div>
+                          {editingBanner?.videoUrl && !formData.videoFile && (
+                            <p className="text-green-600 text-xs sm:text-sm mt-1 sm:mt-2">
+                              Current video will be kept
+                            </p>
+                          )}
+                        </label>
+                      </div>
+                      {errors.video && (
+                        <p className="text-red-500 text-xs sm:text-sm mt-1 sm:mt-2">
+                          {errors.video}
+                        </p>
+                      )}
                     </div>
 
                     {/* Submit Button */}
@@ -1223,23 +1438,23 @@ const BannerManager = () => {
                       disabled={
                         createMutation.isLoading || updateMutation.isLoading
                       }
-                      className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                      className="w-full py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
                     >
                       {createMutation.isLoading || updateMutation.isLoading ? (
                         <>
-                          <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <div className="w-4 h-4 sm:w-6 sm:h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                           <span>
                             {editingBanner ? "Updating..." : "Creating..."}
                           </span>
                         </>
                       ) : editingBanner ? (
                         <>
-                          <Save size={20} />
+                          <Save size={18} className="sm:w-5 sm:h-5" />
                           <span>Update Banner</span>
                         </>
                       ) : (
                         <>
-                          <Plus size={20} />
+                          <Plus size={18} className="sm:w-5 sm:h-5" />
                           <span>Create Banner</span>
                         </>
                       )}
@@ -1248,14 +1463,14 @@ const BannerManager = () => {
                 </div>
 
                 {/* API Info */}
-                <div className="pt-4 border-t border-gray-200">
-                  <p className="text-center text-gray-500 text-sm">
+                {/* <div className="pt-3 sm:pt-4 border-t border-gray-200">
+                  <p className="text-center text-gray-500 text-xs sm:text-sm">
                     Data will be saved to:{" "}
-                    <code className="bg-gray-100 px-2 py-1 rounded text-xs">
+                    <code className="bg-gray-100 px-1 sm:px-2 py-1 rounded text-xs">
                       {API_BASE_URL}/banner
                     </code>
                   </p>
-                </div>
+                </div> */}
               </form>
             </div>
           </div>
