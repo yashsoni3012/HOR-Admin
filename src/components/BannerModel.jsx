@@ -19,7 +19,6 @@ import {
 
 // API Configuration
 const API_BASE_URL = "https://api.houseofresha.com";
-// const VIDEO_BASE_URL = 'https://hor-server.onrender.com';
 
 // Utility function to show toast notifications
 const showToast = (message, type = "success") => {
@@ -137,7 +136,6 @@ const createBanner = async (bannerData) => {
     const response = await fetch(`${API_BASE_URL}/banner`, {
       method: "POST",
       body: formData,
-      // Note: Don't set Content-Type header for FormData - browser sets it automatically
     });
 
     const responseData = await response.json();
@@ -265,14 +263,42 @@ const toggleBannerStatus = async ({ bannerId, isActive }) => {
   }
 };
 
-//to fetch all categories
+// CREATE: Create new category
+const createCategory = async (categoryData) => {
+  console.log("📝 Creating category:", categoryData);
 
-// Update your fetchCategories function to properly handle the response
+  try {
+    const response = await fetch(`${API_BASE_URL}/categories`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(categoryData),
+    });
+
+    const responseData = await response.json();
+    console.log("📥 Create Category API Response:", responseData);
+
+    if (!response.ok) {
+      const errorMsg =
+        responseData.message ||
+        responseData.error ||
+        `HTTP ${response.status}: Failed to create category`;
+      throw new Error(errorMsg);
+    }
+
+    return responseData;
+  } catch (error) {
+    console.error("❌ Create category error:", error);
+    throw error;
+  }
+};
+
+// GET: Fetch categories
 const fetchCategories = async () => {
   try {
     console.log("📡 Fetching categories from API...");
 
-    // Fetch categories from the API endpoint
     const response = await fetch(
       "https://api.houseofresha.com/banner/?category"
     );
@@ -285,29 +311,22 @@ const fetchCategories = async () => {
 
     const data = await response.json();
     console.log("✅ Categories API Response:", data);
-    console.log("📊 Categories response type:", typeof data);
-    console.log("📊 Is array?", Array.isArray(data));
 
     // If the API returns a simple array of strings like ["men", "women", "unisex"]
     if (Array.isArray(data)) {
       return data.map((item) => {
-        // If it's already a string, return it
         if (typeof item === "string") {
           return item;
-        }
-        // If it's an object, try to extract the value
-        else if (item && typeof item === "object") {
+        } else if (item && typeof item === "object") {
           return (
             item.value || item.name || item.category || JSON.stringify(item)
           );
         }
-        // Fallback
         return String(item);
       });
     }
     // If the API returns an object with categories property
     else if (data && typeof data === "object") {
-      // Try different possible property names
       const categoriesArray =
         data.categories || data.data || data.values || Object.values(data);
       if (Array.isArray(categoriesArray)) {
@@ -325,10 +344,9 @@ const fetchCategories = async () => {
     }
 
     console.warn("⚠️ Unexpected categories API response structure:", data);
-    return ["men", "women", "unisex", "glow-ritual", "home"]; // Fallback
+    return ["men", "women", "unisex", "glow-ritual", "home"];
   } catch (error) {
     console.error("❌ Error fetching categories:", error);
-    // Return fallback categories if API fails
     return ["men", "women", "unisex", "glow-ritual", "home"];
   }
 };
@@ -342,7 +360,11 @@ const BannerManager = () => {
   const [showModal, setShowModal] = useState(false);
   const [videoPreview, setVideoPreview] = useState("");
   const [errors, setErrors] = useState({});
-  const [sortOrder, setSortOrder] = useState("position"); // position, date, title
+  const [sortOrder, setSortOrder] = useState("position");
+
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [newCategory, setNewCategory] = useState({ name: "", value: "" });
+  const [categoryErrors, setCategoryErrors] = useState({});
 
   // Form state
   const [formData, setFormData] = useState({
@@ -369,7 +391,7 @@ const BannerManager = () => {
     queryFn: fetchBanners,
     retry: 2,
     refetchOnWindowFocus: false,
-    staleTime: 30000, // 30 seconds
+    staleTime: 30000,
   });
 
   // GET: Fetch categories from API
@@ -383,111 +405,8 @@ const BannerManager = () => {
     queryFn: fetchCategories,
     retry: 2,
     refetchOnWindowFocus: false,
-    staleTime: 60000, // 1 minute
+    staleTime: 60000,
   });
-
-  // Format categories for dropdown
-  // In your BannerManager component, update the categories formatting:
-
-  const categories = React.useMemo(() => {
-    if (!apiCategories || apiCategories.length === 0) {
-      console.log("❌ No categories received from API");
-      return [
-        { value: "men", label: "Men" },
-        { value: "women", label: "Women" },
-        { value: "unisex", label: "Unisex" },
-      ];
-    }
-
-    console.log("📊 Raw API categories:", apiCategories);
-
-    // Process categories and remove duplicates
-    const categoryMap = new Map();
-
-    apiCategories.forEach((cat, index) => {
-      let value, label;
-
-      // Extract value and label based on category type
-      if (typeof cat === "string") {
-        value = cat.toLowerCase().replace(/\s+/g, "-");
-        label = cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, " ");
-      }
-      // If cat is an object with value property
-      else if (cat && typeof cat === "object" && cat.value) {
-        value = cat.value;
-        label =
-          cat.label ||
-          cat.name ||
-          cat.value.charAt(0).toUpperCase() + cat.value.slice(1);
-      }
-      // If cat is an object with name property
-      else if (cat && typeof cat === "object" && cat.name) {
-        value = cat.name.toLowerCase().replace(/\s+/g, "-");
-        label = cat.name.charAt(0).toUpperCase() + cat.name.slice(1);
-      }
-      // If cat is an object but we don't know its structure
-      else if (cat && typeof cat === "object") {
-        // Try to extract value from object
-        value = cat._id || `category-${index}`;
-        label = cat.label || cat.name || cat.title || `Category ${index + 1}`;
-      }
-      // Fallback
-      else {
-        value = String(cat);
-        label = String(cat).charAt(0).toUpperCase() + String(cat).slice(1);
-      }
-
-      // Only add to map if not already present (removes duplicates)
-      if (value && !categoryMap.has(value)) {
-        categoryMap.set(value, { value, label });
-      }
-    });
-
-    // Convert map back to array
-    const formatted = Array.from(categoryMap.values());
-
-    console.log("📋 Formatted categories (duplicates removed):", formatted);
-    return formatted;
-  }, [apiCategories]);
-  // Set default category when categories load
-  useEffect(() => {
-    if (categories.length > 0 && !formData.category) {
-      setFormData((prev) => ({
-        ...prev,
-        category: categories[0].value,
-      }));
-    }
-  }, [categories, formData.category]);
-
-  // Process banners data
-  const banners = React.useMemo(() => {
-    if (!apiResponse) return [];
-
-    let bannersArray = [];
-
-    if (Array.isArray(apiResponse)) {
-      bannersArray = apiResponse;
-    } else if (apiResponse.banners && Array.isArray(apiResponse.banners)) {
-      bannersArray = apiResponse.banners;
-    } else if (apiResponse.data && Array.isArray(apiResponse.data)) {
-      bannersArray = apiResponse.data;
-    } else if (apiResponse.success && apiResponse.banners) {
-      bannersArray = apiResponse.banners;
-    }
-
-    // Sort banners
-    return [...bannersArray].sort((a, b) => {
-      switch (sortOrder) {
-        case "date":
-          return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
-        case "title":
-          return (a.title || "").localeCompare(b.title || "");
-        case "position":
-        default:
-          return (a.position || 99) - (b.position || 99);
-      }
-    });
-  }, [apiResponse, sortOrder]);
 
   // POST: Create mutation
   const createMutation = useMutation({
@@ -564,6 +483,125 @@ const BannerManager = () => {
       showToast(`Failed to delete banner: ${error.message}`, "error");
     },
   });
+
+  // POST: Create category mutation (MOVED INSIDE COMPONENT)
+  const createCategoryMutation = useMutation({
+    mutationFn: createCategory,
+    onSuccess: (data) => {
+      console.log("✅ Category created successfully:", data);
+      queryClient.invalidateQueries(["categories"]);
+      setShowCategoryModal(false);
+      setNewCategory({ name: "", value: "" });
+      setCategoryErrors({});
+      showToast("Category created successfully!", "success");
+    },
+    onError: (error) => {
+      console.error("❌ Category creation failed:", error);
+      showToast(`Failed to create category: ${error.message}`, "error");
+    },
+  });
+
+  // Format categories for dropdown
+  const categories = React.useMemo(() => {
+    if (!apiCategories || apiCategories.length === 0) {
+      console.log("❌ No categories received from API");
+      return [
+        { value: "men", label: "Men" },
+        { value: "women", label: "Women" },
+        { value: "unisex", label: "Unisex" },
+      ];
+    }
+
+    console.log("📊 Raw API categories:", apiCategories);
+
+    // Process categories and remove duplicates
+    const categoryMap = new Map();
+
+    apiCategories.forEach((cat, index) => {
+      let value, label;
+
+      // Extract value and label based on category type
+      if (typeof cat === "string") {
+        value = cat.toLowerCase().replace(/\s+/g, "-");
+        label = cat.charAt(0).toUpperCase() + cat.slice(1).replace(/-/g, " ");
+      }
+      // If cat is an object with value property
+      else if (cat && typeof cat === "object" && cat.value) {
+        value = cat.value;
+        label =
+          cat.label ||
+          cat.name ||
+          cat.value.charAt(0).toUpperCase() + cat.value.slice(1);
+      }
+      // If cat is an object with name property
+      else if (cat && typeof cat === "object" && cat.name) {
+        value = cat.name.toLowerCase().replace(/\s+/g, "-");
+        label = cat.name.charAt(0).toUpperCase() + cat.name.slice(1);
+      }
+      // If cat is an object but we don't know its structure
+      else if (cat && typeof cat === "object") {
+        // Try to extract value from object
+        value = cat._id || `category-${index}`;
+        label = cat.label || cat.name || cat.title || `Category ${index + 1}`;
+      }
+      // Fallback
+      else {
+        value = String(cat);
+        label = String(cat).charAt(0).toUpperCase() + String(cat).slice(1);
+      }
+
+      // Only add to map if not already present (removes duplicates)
+      if (value && !categoryMap.has(value)) {
+        categoryMap.set(value, { value, label });
+      }
+    });
+
+    // Convert map back to array
+    const formatted = Array.from(categoryMap.values());
+
+    console.log("📋 Formatted categories (duplicates removed):", formatted);
+    return formatted;
+  }, [apiCategories]);
+
+  // Set default category when categories load
+  useEffect(() => {
+    if (categories.length > 0 && !formData.category) {
+      setFormData((prev) => ({
+        ...prev,
+        category: categories[0].value,
+      }));
+    }
+  }, [categories, formData.category]);
+
+  // Process banners data
+  const banners = React.useMemo(() => {
+    if (!apiResponse) return [];
+
+    let bannersArray = [];
+
+    if (Array.isArray(apiResponse)) {
+      bannersArray = apiResponse;
+    } else if (apiResponse.banners && Array.isArray(apiResponse.banners)) {
+      bannersArray = apiResponse.banners;
+    } else if (apiResponse.data && Array.isArray(apiResponse.data)) {
+      bannersArray = apiResponse.data;
+    } else if (apiResponse.success && apiResponse.banners) {
+      bannersArray = apiResponse.banners;
+    }
+
+    // Sort banners
+    return [...bannersArray].sort((a, b) => {
+      switch (sortOrder) {
+        case "date":
+          return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        case "title":
+          return (a.title || "").localeCompare(b.title || "");
+        case "position":
+        default:
+          return (a.position || 99) - (b.position || 99);
+      }
+    });
+  }, [apiResponse, sortOrder]);
 
   // ============== EVENT HANDLERS ==============
 
@@ -746,6 +784,72 @@ const BannerManager = () => {
   const handleSortChange = (order) => {
     setSortOrder(order);
     showToast(`Sorted by ${order}`, "success");
+  };
+
+  // Category handlers
+  const handleAddCategory = () => {
+    setShowCategoryModal(true);
+  };
+
+  const handleCategoryInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewCategory((prev) => ({
+      ...prev,
+      [name]: value,
+      ...(name === "name" &&
+        !prev.value && {
+          value: value.toLowerCase().replace(/\s+/g, "-"),
+        }),
+    }));
+    if (categoryErrors[name]) {
+      setCategoryErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const validateCategoryForm = () => {
+    const newErrors = {};
+
+    if (!newCategory.name.trim()) {
+      newErrors.name = "Category name is required";
+    }
+
+    if (!newCategory.value.trim()) {
+      newErrors.value = "Category value is required";
+    }
+
+    // Check if category value already exists
+    if (
+      categories.some((cat) => cat.value === newCategory.value.toLowerCase())
+    ) {
+      newErrors.value = "Category value already exists";
+    }
+
+    setCategoryErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleCategorySubmit = (e) => {
+    e.preventDefault();
+
+    if (!validateCategoryForm()) {
+      showToast("Please fix the category form errors", "error");
+      return;
+    }
+
+    const categoryData = {
+      name: newCategory.name.trim(),
+      value: newCategory.value.toLowerCase().trim(),
+      createdAt: new Date().toISOString(),
+      isActive: true,
+    };
+
+    createCategoryMutation.mutate(categoryData);
+  };
+
+  const resetCategoryForm = () => {
+    setNewCategory({ name: "", value: "" });
+    setCategoryErrors({});
+    setShowCategoryModal(false);
   };
 
   // Cleanup video preview URLs
@@ -1108,12 +1212,6 @@ const BannerManager = () => {
                   <BannerCard key={banner._id} banner={banner} />
                 ))}
               </div>
-
-              {/* <div className="mt-8 pt-6 border-t border-gray-200 text-center">
-                <p className="text-gray-600 text-sm">
-                  Showing {banners.length} banners • API: {API_BASE_URL}/banner
-                </p>
-              </div> */}
             </>
           ) : (
             <div className="text-center py-16">
@@ -1244,7 +1342,6 @@ const BannerManager = () => {
                               <span>Using fallback categories</span>
                             </div>
                           </div>
-                          {/* In your dropdown - Add index to make keys unique */}
                           <select
                             name="category"
                             value={formData.category}
@@ -1257,8 +1354,6 @@ const BannerManager = () => {
                                 key={`${cat.value}-${index}`}
                                 value={cat.value}
                               >
-                                {" "}
-                                {/* Add index to key */}
                                 {cat.label}
                               </option>
                             ))}
@@ -1461,16 +1556,6 @@ const BannerManager = () => {
                     </button>
                   </div>
                 </div>
-
-                {/* API Info */}
-                {/* <div className="pt-3 sm:pt-4 border-t border-gray-200">
-                  <p className="text-center text-gray-500 text-xs sm:text-sm">
-                    Data will be saved to:{" "}
-                    <code className="bg-gray-100 px-1 sm:px-2 py-1 rounded text-xs">
-                      {API_BASE_URL}/banner
-                    </code>
-                  </p>
-                </div> */}
               </form>
             </div>
           </div>
@@ -1545,6 +1630,106 @@ const BannerManager = () => {
           </div>
         </div>
       )}
+
+      {/* Category Creation Modal */}
+      {showCategoryModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900">
+                  Create New Category
+                </h3>
+                <p className="text-gray-600 text-sm mt-1">
+                  Add a new category for banners
+                </p>
+              </div>
+              <button
+                onClick={resetCategoryForm}
+                className="p-2 hover:bg-gray-100 rounded-xl transition"
+                disabled={createCategoryMutation.isLoading}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCategorySubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Category Name *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={newCategory.name}
+                  onChange={handleCategoryInputChange}
+                  className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none ${
+                    categoryErrors.name ? "border-red-500" : "border-gray-300"
+                  }`}
+                  placeholder="e.g., Men's Collection"
+                />
+                {categoryErrors.name && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {categoryErrors.name}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Category Value *
+                </label>
+                <input
+                  type="text"
+                  name="value"
+                  value={newCategory.value}
+                  onChange={handleCategoryInputChange}
+                  className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none ${
+                    categoryErrors.value ? "border-red-500" : "border-gray-300"
+                  }`}
+                  placeholder="e.g., mens-collection"
+                />
+                {categoryErrors.value && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {categoryErrors.value}
+                  </p>
+                )}
+                <p className="text-gray-500 text-xs mt-2">
+                  Used in URLs and API calls (lowercase, hyphens)
+                </p>
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <button
+                  type="button"
+                  onClick={resetCategoryForm}
+                  className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition font-bold"
+                  disabled={createCategoryMutation.isLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={createCategoryMutation.isLoading}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:shadow-xl transition font-bold shadow-lg disabled:opacity-50 flex items-center justify-center gap-3"
+                >
+                  {createCategoryMutation.isLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <Plus size={18} />
+                      Create Category
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -1616,15 +1801,11 @@ const bannerStyles = `
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(to bottom, #7e22ce, #db2777);
 }
-
-/* Modal scrollbar */
-.modal-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: #9333ea #f1f1f1;
-}
 `;
 
 // Inject styles
-const styleSheet = document.createElement("style");
-styleSheet.textContent = bannerStyles;
-document.head.appendChild(styleSheet);
+if (typeof document !== "undefined") {
+  const styleSheet = document.createElement("style");
+  styleSheet.textContent = bannerStyles;
+  document.head.appendChild(styleSheet);
+}

@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  X, 
-  Home, 
-  Package, 
-  ShoppingCart, 
-  Users, 
-  Sparkles, 
-  LogOut, 
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  X,
+  Home,
+  Package,
+  ShoppingCart,
+  Users,
+  Sparkles,
+  LogOut,
   AlertTriangle,
-  Image
-} from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+  Image,
+} from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const Sidebar = ({ isOpen, toggle }) => {
   const navigate = useNavigate();
@@ -20,13 +20,13 @@ const Sidebar = ({ isOpen, toggle }) => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const menuItems = [
-    { path: '/dashboard', name: 'Dashboard', icon: Home },
-    { path: '/products', name: 'Products', icon: Package },
-    { path: '/orders', name: 'Orders', icon: ShoppingCart },
-    { path: '/customers', name: 'Customers', icon: Users },
-    { path: '/mie-by-resha', name: 'MIE by Resha', icon: Sparkles },
-    { path: '/banners', name: 'Banner', icon: Image },
-    { path: '/users', name: 'Users', icon: Users },
+    { path: "/dashboard", name: "Dashboard", icon: Home },
+    { path: "/products", name: "Products", icon: Package },
+    { path: "/orders", name: "Orders", icon: ShoppingCart },
+    { path: "/customers", name: "Customers", icon: Users },
+    { path: "/mie-by-resha", name: "MIE by Resha", icon: Sparkles },
+    { path: "/banners", name: "Banner", icon: Image },
+    { path: "/users", name: "Users", icon: Users },
   ];
 
   const handleNavigation = (path) => {
@@ -39,7 +39,7 @@ const Sidebar = ({ isOpen, toggle }) => {
   const handleConfirmLogout = () => {
     logout();
     setShowLogoutModal(false);
-    navigate('/login', { replace: true });
+    navigate("/login", { replace: true });
   };
 
   const handleCancelLogout = () => setShowLogoutModal(false);
@@ -56,7 +56,7 @@ const Sidebar = ({ isOpen, toggle }) => {
       {/* Sidebar */}
       <aside
         className={`fixed top-0 left-0 h-full bg-white shadow-2xl z-50 transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+          isOpen ? "translate-x-0" : "-translate-x-full"
         } w-64 lg:translate-x-0`}
       >
         <div className="flex flex-col h-full">
@@ -65,24 +65,24 @@ const Sidebar = ({ isOpen, toggle }) => {
             {/* Logo Container - Perfectly centered */}
             <div className="flex flex-col items-center justify-center gap-4 mb-0">
               <div className="w-28 h-14 flex items-center justify-center">
-                <img 
-                  src="/resha-logo.png" 
+                <img
+                  src="/resha-logo.png"
                   alt="House of Resha Logo"
                   className="w-full h-full object-contain"
                 />
               </div>
             </div>
-            
+
             {/* Brand Name */}
             <div className="text-center">
               <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                 House of Resha
               </h1>
             </div>
-            
+
             {/* Close button for mobile */}
-            <button 
-              onClick={toggle} 
+            <button
+              onClick={toggle}
               className="absolute top-4 right-4 lg:hidden text-gray-600 hover:text-gray-900 transition-colors"
             >
               <X size={24} />
@@ -100,8 +100,8 @@ const Sidebar = ({ isOpen, toggle }) => {
                   onClick={() => handleNavigation(item.path)}
                   className={`w-full flex items-center gap-4 px-6 py-3 transition-all duration-200 ${
                     isActive
-                      ? 'bg-purple-50 border-l-4 border-purple-600 text-purple-600'
-                      : 'text-gray-700 hover:bg-gray-50 border-l-4 border-transparent hover:border-gray-300'
+                      ? "bg-purple-50 border-l-4 border-purple-600 text-purple-600"
+                      : "text-gray-700 hover:bg-gray-50 border-l-4 border-transparent hover:border-gray-300"
                   }`}
                 >
                   <Icon size={20} />
@@ -128,7 +128,6 @@ const Sidebar = ({ isOpen, toggle }) => {
       {showLogoutModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-auto animate-in fade-in duration-300">
-            
             {/* Header */}
             <div className="flex items-center gap-3 p-6 border-b border-gray-200">
               <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
