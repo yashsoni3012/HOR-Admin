@@ -79,7 +79,6 @@ import Products from './pages/Products';
 import Orders from './pages/Orders';
 import Customers from './pages/Customers';
 import MIEByResha from './pages/MIEByResha';
-import Banners from './pages/Banners';
 import BannerModel from './components/BannerModel';
 import UserManagement from './pages/UserManagement'; // Add this import
 

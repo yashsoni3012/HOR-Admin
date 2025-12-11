@@ -316,14 +316,17 @@
 // export default Banners;
 
 
-import React from 'react'
+// pages/Banners.jsx
+// import React from 'react';
+// import BannerModel from '../components/BannerModel';
 
-const Banners = () => {
-  return (
-    <div>
-      hello
-    </div>
-  )
-}
+// const Banners = () => {
+//   return (
+//     <div className="p-6">
+//       <BannerModel />
+//     </div>
+//   );
+// };
 
-export default Banners
+// export default Banners;
+

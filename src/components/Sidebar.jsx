@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import logoImg from '../../public/resha-logo.png';
 import {
   X,
   Home,
@@ -66,7 +67,7 @@ const Sidebar = ({ isOpen, toggle }) => {
             <div className="flex flex-col items-center justify-center gap-4 mb-0">
               <div className="w-28 h-14 flex items-center justify-center">
                 <img
-                  src="/resha-logo.png"
+                  src={logoImg}
                   alt="House of Resha Logo"
                   className="w-full h-full object-contain"
                 />

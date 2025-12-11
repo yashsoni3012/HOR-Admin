@@ -5,7 +5,7 @@ import { userApi } from '../services/userApi';
 // Helper to get user fields with fallbacks
 export const getUserField = (user, fieldNames) => {
   if (!user) return 'N/A';
-  
+
   for (let field of fieldNames) {
     const value = user[field];
     if (value !== undefined && value !== null && value !== '') {
@@ -69,16 +69,16 @@ export const useUpdateUserStatus = () => {
       const previousInactive = queryClient.getQueryData(['users', 'inactive']);
 
       // Optimistically update to the new value
-      const updateUserInList = (list) => 
+      const updateUserInList = (list) =>
         list.map(user => user.id === userId ? { ...user, status } : user);
 
       if (status === 'active') {
         queryClient.setQueryData(['users', 'active'], updateUserInList);
-        queryClient.setQueryData(['users', 'inactive'], 
+        queryClient.setQueryData(['users', 'inactive'],
           previousInactive?.filter(user => user.id !== userId) || []);
       } else {
         queryClient.setQueryData(['users', 'inactive'], updateUserInList);
-        queryClient.setQueryData(['users', 'active'], 
+        queryClient.setQueryData(['users', 'active'],
           previousActive?.filter(user => user.id !== userId) || []);
       }
 
