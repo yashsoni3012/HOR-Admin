@@ -829,7 +829,7 @@ const toggleMutation = useMutation({
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
             Loading Banners...
           </h2>
-          <p className="text-gray-600">Fetching data from your API...</p>
+          {/* <p className="text-gray-600">Fetching data from your API...</p> */}
         </div>
       </div>
     );
