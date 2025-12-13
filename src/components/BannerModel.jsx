@@ -121,10 +121,12 @@ const updateBanner = async (bannerData) => {
   formData.append("position", bannerData.position.toString());
   if (bannerData.videoFile) formData.append("video", bannerData.videoFile);
 
-  const res = await fetch(`${API_BASE_URL}/banner/${bannerData._id}`, {
-    method: "PUT",
-    body: formData,
-  });
+  const res = await fetch(`${API_BASE_URL}/clothing/${id}`, {
+  method: "PATCH",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload),
+});
+
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     throw new Error(
