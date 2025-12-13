@@ -48,6 +48,20 @@ const ProductModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState("");
 
+  const fetchCategories = async () => {
+    const res = await fetch(`${API_BASE_URL}/category`);
+    if (!res.ok) {
+      throw new Error("Failed to fetch categories");
+    }
+
+    const data = await res.json();
+
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data.data)) return data.data;
+
+    return [];
+  };
+
   const {
     data: categories = [],
     isLoading: isLoadingCategories,
@@ -61,15 +75,23 @@ const ProductModal = ({
           `Category API Error: ${response.status} ${response.statusText}`
         );
       }
+
       const data = await response.json();
+
       if (Array.isArray(data)) return data;
-      if (data.data && Array.isArray(data.data)) return data.data;
-      if (data.success && Array.isArray(data.data)) return data.data;
+      if (Array.isArray(data?.data)) return data.data;
+      if (data?.success && Array.isArray(data.data)) return data.data;
+
       return [];
     },
-    retry: 2,
+
+    // 🔥 VERY IMPORTANT SETTINGS
+    enabled: true, // ❌ remove isOpen dependency
+    staleTime: Infinity, // never refetch automatically
+    cacheTime: Infinity, // keep cached forever
     refetchOnWindowFocus: false,
-    enabled: isOpen,
+    refetchOnReconnect: false,
+    retry: 2,
   });
 
   useEffect(() => {
@@ -655,15 +677,25 @@ const ProductModal = ({
                       ) : categories.length > 0 ? (
                         <select
                           name="categoryId"
-                          value={formData.categoryId}
+                          value={formData.categoryId || ""}
                           onChange={handleInputChange}
-                          className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all appearance-none bg-white ${
+                          disabled={
+                            isLoadingCategories || categories.length === 0
+                          }
+                          className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed ${
                             errors.categoryId
                               ? "border-red-400 bg-red-50"
                               : "border-gray-200 focus:border-purple-400"
                           }`}
                         >
-                          <option value="">Select category</option>
+                          <option value="">
+                            {isLoadingCategories
+                              ? "Loading categories..."
+                              : categories.length === 0
+                              ? "No categories available"
+                              : "Select category"}
+                          </option>
+
                           {categories.map((cat) => (
                             <option key={cat._id} value={cat._id}>
                               {cat.name}

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import logoImg from '../../public/resha-logo.png';
+import logoImg from "../../src/assets/resha-logo.png";
+
 import {
   X,
   Home,

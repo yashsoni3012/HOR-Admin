@@ -122,10 +122,10 @@ const updateBanner = async (bannerData) => {
   if (bannerData.videoFile) formData.append("video", bannerData.videoFile);
 
   const res = await fetch(`${API_BASE_URL}/clothing/${id}`, {
-  method: "PATCH",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(payload),
-});
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -165,7 +165,7 @@ const toggleBannerStatus = async ({ bannerId, isActive }) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ isActive: !isActive }) // Send the opposite of current status
+      body: JSON.stringify({ isActive: !isActive }), // Send the opposite of current status
     });
 
     if (!response.ok) {
@@ -293,52 +293,55 @@ const BannerManager = () => {
     },
   });
 
-const toggleMutation = useMutation({
-  mutationFn: ({ bannerId, isActive }) => {
-    console.log("Calling toggleStatus with:", bannerId, isActive);
-    return api.banner.toggleStatus(bannerId, isActive);
-  },
-  onMutate: async ({ bannerId, isActive }) => {
-    setTogglingBannerId(bannerId); // Set loading for this specific banner
-    await queryClient.cancelQueries({ queryKey: ["banners"] });
-    
-    const previous = queryClient.getQueryData(["banners"]);
-    
-    // Optimistically update the UI
-    queryClient.setQueryData(["banners"], (old) => {
-      const oldData = old || { success: false, banners: [] };
-      return {
-        ...oldData,
-        banners: oldData.banners.map((b) =>
-          b._id === bannerId ? { ...b, isActive: !isActive } : b
-        ),
-      };
-    });
-    
-    return { previous };
-  },
-  onError: (err, { bannerId, isActive }, ctx) => {
-    console.error("Toggle error:", err);
-    
-    // Revert optimistic update
-    if (ctx?.previous) {
-      queryClient.setQueryData(["banners"], ctx.previous);
-    }
-    
-    showToast(`Failed to update status: ${err.message}`, "error");
-  },
-  onSuccess: (data, { bannerId, isActive }) => {
-    console.log("Toggle success:", data);
-    showToast(`Banner ${!isActive ? "activated" : "deactivated"} successfully!`, "success");
-  },
-  onSettled: (data, error, { bannerId }) => {
-    // Clear loading state for this banner
-    setTogglingBannerId(null);
-    
-    // Refetch to ensure UI is in sync with server
-    queryClient.invalidateQueries({ queryKey: ["banners"] });
-  },
-});
+  const toggleMutation = useMutation({
+    mutationFn: ({ bannerId, isActive }) => {
+      console.log("Calling toggleStatus with:", bannerId, isActive);
+      return api.banner.toggleStatus(bannerId, isActive);
+    },
+    onMutate: async ({ bannerId, isActive }) => {
+      setTogglingBannerId(bannerId); // Set loading for this specific banner
+      await queryClient.cancelQueries({ queryKey: ["banners"] });
+
+      const previous = queryClient.getQueryData(["banners"]);
+
+      // Optimistically update the UI
+      queryClient.setQueryData(["banners"], (old) => {
+        const oldData = old || { success: false, banners: [] };
+        return {
+          ...oldData,
+          banners: oldData.banners.map((b) =>
+            b._id === bannerId ? { ...b, isActive: !isActive } : b
+          ),
+        };
+      });
+
+      return { previous };
+    },
+    onError: (err, { bannerId, isActive }, ctx) => {
+      console.error("Toggle error:", err);
+
+      // Revert optimistic update
+      if (ctx?.previous) {
+        queryClient.setQueryData(["banners"], ctx.previous);
+      }
+
+      showToast(`Failed to update status: ${err.message}`, "error");
+    },
+    onSuccess: (data, { bannerId, isActive }) => {
+      console.log("Toggle success:", data);
+      showToast(
+        `Banner ${!isActive ? "activated" : "deactivated"} successfully!`,
+        "success"
+      );
+    },
+    onSettled: (data, error, { bannerId }) => {
+      // Clear loading state for this banner
+      setTogglingBannerId(null);
+
+      // Refetch to ensure UI is in sync with server
+      queryClient.invalidateQueries({ queryKey: ["banners"] });
+    },
+  });
 
   const deleteMutation = useMutation({
     mutationFn: deleteBanner,
