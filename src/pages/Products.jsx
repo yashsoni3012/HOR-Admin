@@ -209,7 +209,7 @@ const Products = () => {
                 Fashion Management
               </h1>
               <p className="text-gray-600 text-sm sm:text-base mt-2 ml-0 sm:ml-14">
-                Manage your products, inventory, and categories
+                Manage your products, invFFFentory, and categories
               </p>
             </div>
             <button

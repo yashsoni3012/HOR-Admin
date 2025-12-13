@@ -34,7 +34,7 @@
 //           <Routes>
 //             {/* Public Route */}
 //             <Route path="/login" element={<Login />} />
-            
+
 //             {/* Protected Routes */}
 //             <Route
 //               path="/"
@@ -52,13 +52,13 @@
 //               <Route path="mie-by-resha" element={<MIEByResha />} />
 //               <Route path="banners" element={<BannerModel />} />
 //             </Route>
-            
+
 //             {/* Catch all route - redirect to dashboard */}
 //             <Route path="*" element={<Navigate to="/dashboard" replace />} />
 //           </Routes>
 //         </Router>
 //       </AuthProvider>
-      
+
 //       {/* React Query Devtools - Remove in production */}
 //       <ReactQueryDevtools initialIsOpen={false} />
 //     </QueryClientProvider>
@@ -67,20 +67,25 @@
 
 // export default App;
 
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from './context/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
-import Layout from './components/Layout';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Products from './pages/Products';
-import Orders from './pages/Orders';
-import Customers from './pages/Customers';
-import MIEByResha from './pages/MIEByResha';
-import BannerModel from './components/BannerModel';
-import UserManagement from './pages/UserManagement'; // Add this import
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Layout from "./components/Layout";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Products from "./pages/Products";
+import Orders from "./pages/Orders";
+import Customers from "./pages/Customers";
+import MIEByResha from "./pages/MIEByResha";
+import UserManagement from "./pages/UserManagement"; // Add this import
+import Banners from "./pages/Banners";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -102,7 +107,7 @@ const App = () => {
           <Routes>
             {/* Public Route */}
             <Route path="/login" element={<Login />} />
-            
+
             {/* Protected Routes */}
             <Route
               path="/"
@@ -118,10 +123,11 @@ const App = () => {
               <Route path="orders" element={<Orders />} />
               <Route path="customers" element={<Customers />} />
               <Route path="mie-by-resha" element={<MIEByResha />} />
-              <Route path="banners" element={<BannerModel />} />
-              <Route path="users" element={<UserManagement />} /> {/* Add this route */}
+              <Route path="banners" element={<Banners />} />
+              <Route path="users" element={<UserManagement />} />{" "}
+              {/* Add this route */}
             </Route>
-            
+
             {/* Catch all route - redirect to dashboard */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
